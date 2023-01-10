@@ -4,6 +4,8 @@
 
 注：本仓库不是VideoYou的代码开源库，而是项目发布仓库，且VideoYou项目闭源。
 
+`抵制源码逆向，抵制包体修改`
+
 ## 软件特色
 
 VideoYou是一款基于MD3风格打造的本地视频播放软件。
@@ -14,9 +16,8 @@ VideoYou是一款基于MD3风格打造的本地视频播放软件。
 
 ## 下载地址
 
-`请在正确的渠道下载本应用，请勿使用他人重新签名的安装文件。`
 
-|  [Github release](https://github.com/Clearpole/VideoYou/releases) | [酷安]() | 
+|  [Github release](https://github.com/Clearpole/VideoYou/releases) | [酷安](coolapk.com) | 
 |:--:|:--:|
 | 多数为Canary版本发布| 暂未上传 |
 
