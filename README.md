@@ -1,5 +1,4 @@
-# VideoYou 
-# -local video player
+# VideoYou - Player
 
 [官方频道 点击加入QQ频道【VideoYou】](https://pd.qq.com/s/61vf6d5qi)
 
