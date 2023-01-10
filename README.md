@@ -17,7 +17,7 @@ VideoYou是一款基于MD3风格打造的本地视频播放软件。
 ## 下载地址
 
 
-|  [Github release](https://github.com/Clearpole/VideoYou/releases) | [酷安](coolapk.com) | 
+|  [Github release](https://github.com/Clearpole/VideoYou/releases) | [酷安]((https://coolapk.com) | 
 |:--:|:--:|
 | 多数为Canary版本发布| 暂未上传 |
 
