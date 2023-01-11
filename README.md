@@ -2,9 +2,11 @@
 
 [官方频道 点击加入QQ频道【VideoYou】](https://pd.qq.com/s/61vf6d5qi)
 
-注：本仓库不是VideoYou的代码开源库，而是项目发布仓库，且VideoYou项目闭源。
+注：本仓库不是VideoYou的代码开源库，而是项目发布仓库。
 
-`抵制源码逆向，抵制包体修改`
+[源码仓库 前往源码仓库](https://github.com/Clearpole/VideoYou-Code/tree/master)
+
+`赞颂开源项目，抵制源码逆向，抵制包体修改`
 
 ## 软件特色
 
