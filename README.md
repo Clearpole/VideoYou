@@ -6,7 +6,7 @@
 
 ~~[源码仓库 前往源码仓库](https://github.com/Clearpole/VideoYou/)~~
 
-<b>由于某些特殊原因，VideoYou暂时性闭源。</b>
+<b>由于某些特殊原因，VideoYou暂时性`闭源`。</b>
 
 `赞颂开源项目，抵制源码逆向，抵制包体修改`
 
