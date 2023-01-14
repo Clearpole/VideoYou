@@ -16,7 +16,9 @@ VideoYou是一款基于MD3风格打造的本地视频播放软件。
 
 ## 支持平台
 
-仅支持Android端且Android版本大于等于Android12。后期将最低适配至Android7.1。
+仅支持Android端且Android版本大于等于Android5.0。
+
+仅在Android12及以上版本会开启动态取色。
 
 ## 下载地址
 
