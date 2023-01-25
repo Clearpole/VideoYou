@@ -1,6 +1,6 @@
 # VideoYou - Player
 
-[VideoYou 官方网站](https://clearpole.github.io/docs/videoyou/%E8%BD%AF%E4%BB%B6/%E8%BD%AF%E4%BB%B6%E4%BB%8B%E7%BB%8D)
+[VideoYou 官方网站](https://clearpole.gitee.io/videoyou-website/)
 
 
 [官方频道 点击加入QQ频道【VideoYou】](https://pd.qq.com/s/61vf6d5qi)
