@@ -5,11 +5,11 @@
 
 [官方频道 点击加入QQ频道【VideoYou】](https://pd.qq.com/s/61vf6d5qi)
 
-注：本仓库不是VideoYou的代码开源库，而是项目发布仓库。~~您可以点击以下链接来查看小白的shishan源码。~~
+注：本仓库不是VideoYou的代码开源库，而是项目发布仓库。您可以点击以下链接来查看VideoYou的源码
 
-~~[源码仓库 前往源码仓库](https://github.com/Clearpole/VideoYou/)~~
+[源码仓库 前往源码仓库](https://github.com/Clearpole/VideoYou-Code-View/tree/main)
 
-<b>由于某些特殊原因，VideoYou暂时性`闭源`。</b>
+<b>由于某些特殊原因，VideoYou随时`闭源`。</b>
 
 `赞颂开源项目，抵制源码逆向，抵制包体修改`
 
