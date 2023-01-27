@@ -1,0 +1,20 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.VideoYou" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary" tools:targetApi="s">@android:color/system_accent1_500</item>
+        <item name="colorOnPrimary" tools:targetApi="s">@android:color/system_accent1_100</item>
+        <item name="colorPrimaryContainer" tools:targetApi="s">@android:color/system_accent1_500
+        </item>
+        <item name="colorOnPrimaryContainer" tools:targetApi="s">@android:color/system_accent1_500
+        </item>
+    </style>
+
+    <style name="Theme.VideoYou.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.VideoYou.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.VideoYou.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+</resources>

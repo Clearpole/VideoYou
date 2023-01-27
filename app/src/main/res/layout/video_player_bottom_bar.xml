@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="videoModel"
+            type="com.clearpole.videoyou.model.VideoModel" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/video_player_bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CC000000"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="bottom">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/video_player_video_slider_now_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="25dp"
+                    android:text="@{String.valueOf(videoModel.nowProgressString)}"
+                    android:textColor="#ffffff" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/video_player_video_slider"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:value="@{videoModel.nowProgressLong}"
+                    android:valueTo="@{videoModel.allProgressFloat}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/video_player_video_slider_all_text"
+                    android:layout_toEndOf="@id/video_player_video_slider_now_text" />
+
+                <TextView
+                    android:id="@+id/video_player_video_slider_all_text"
+                    tools:ignore="NotSibling"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="25dp"
+                    android:text="@{String.valueOf(videoModel.allProgressString)}"
+                    android:textColor="#ffffff" />
+            </RelativeLayout>
+        </LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <LinearLayout
+                android:id="@+id/video_player_pause_root"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true">
+                <ImageView
+                    android:id="@+id/video_player_pause"
+                    android:layout_marginLeft="25dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@{videoModel.pauseImg}"
+                    app:tint="#ffffff" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/video_player_picture_root"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@id/video_player_screen_root"
+                android:layout_marginTop="4dp">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:src="@drawable/baseline_picture_in_picture_24"
+                    app:tint="#ffffff" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/video_player_screen_root"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true">
+
+                <ImageView
+                    android:id="@+id/video_player_screen"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginRight="25dp"
+                    android:src="@{videoModel.screenImg}"
+                    app:tint="#ffffff" />
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+</layout>

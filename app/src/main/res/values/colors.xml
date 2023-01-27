@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <item name="color1" tools:targetApi="s" type="color">@android:color/system_accent1_50</item>
+    <item name="color2" tools:targetApi="s" type="color">@android:color/system_accent1_100</item>
+    <item name="color3" tools:targetApi="s" type="color">@android:color/system_accent1_200</item>
+    <item name="color4" tools:targetApi="s" type="color">@android:color/system_accent1_300</item>
+    <item name="color5" tools:targetApi="s" type="color">@android:color/system_accent1_400</item>
+    <item name="color6" tools:targetApi="s" type="color">@android:color/system_accent1_500</item>
+    <item name="color7" tools:targetApi="s" type="color">@android:color/system_accent1_600</item>
+    <item name="color8" tools:targetApi="s" type="color">@android:color/system_accent1_700</item>
+    <item name="color9" tools:targetApi="s" type="color">@android:color/system_accent1_800</item>
+    <item name="color10" tools:targetApi="s" type="color">@android:color/system_accent1_900</item>
+    <item name="color11" tools:targetApi="s" type="color">@android:color/system_accent1_1000</item>
+</resources>

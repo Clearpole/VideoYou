@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/InterfaceNavigation">
+        <menu>
+            <item
+                android:id="@+id/toHome"
+                android:checkable="true"
+                android:icon="@drawable/baseline_home_24"
+                android:title="@string/Home" />
+            <item
+                android:id="@+id/toSettings"
+                android:checkable="true"
+                android:icon="@drawable/baseline_settings_24"
+                android:title="@string/setting" />
+        </menu>
+    </item>
+    <item android:title="@string/UtilOptions">
+        <menu>
+            <item
+                android:id="@+id/toSearch"
+                android:icon="@drawable/baseline_search_24"
+                android:title="@string/search" />
+            <item
+                android:id="@+id/toInternet"
+                android:icon="@drawable/baseline_wifi_tethering_24"
+                android:title="@string/Stream" />
+            <item
+                android:id="@+id/toWebDav"
+                android:icon="@drawable/baseline_webhook_24"
+                android:title="@string/webdav" />
+        </menu>
+    </item>
+</menu>
