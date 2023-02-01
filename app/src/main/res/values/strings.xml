@@ -1,14 +1,18 @@
 <resources>
-    <string name="app_name">VideoYou - opt</string>
+    <string name="app_name">VideoYou</string>
     <string name="reFreshMediaStore">刷新媒体库</string>
     <string name="intoDevelopMode">进入开发者调试</string>
     <string name="InterfaceNavigation">界面导航</string>
     <string name="Home">主页</string>
     <string name="setting">设置</string>
-    <string name="UtilOptions">功能选项</string>
-    <string name="search">搜索</string>
+    <string name="UtilOptions">功能</string>
+    <string name="search">视频搜索</string>
     <string name="Stream">网络串流</string>
     <string name="webdav">WebDav</string>
     <string name="onClickRefreshMedia">已通知系统尝试刷新！\n这将需要数秒的时间\n请耐心等待...</string>
     <string name="notFoundPlayList">本地没有播放列表</string>
+    <string name="settingItems">设置项目</string>
+    <string name="more">更多</string>
+    <string name="fileManager">文件管理</string>
+    <string name="lockFile">隐私文件</string>
 </resources>

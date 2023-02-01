@@ -7,5 +7,6 @@ class MainObjects {
         var isChoose = false
         var chooseList : JSONObject = JSONObject()
         var chooseListView : JSONObject? = null
+        var allSize : Long = 0
     }
 }

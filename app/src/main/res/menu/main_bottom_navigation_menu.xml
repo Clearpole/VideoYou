@@ -4,15 +4,20 @@
         android:id="@+id/page1"
         android:enabled="true"
         android:icon="@drawable/baseline_refresh_24"
-        android:title="预播放" />
+        android:title="列表" />
     <item
         android:id="@+id/page2"
         android:enabled="true"
         android:icon="@drawable/baseline_map_24"
-        android:title="媒体库" />
+        android:title="媒体" />
     <item
         android:id="@+id/page3"
         android:enabled="true"
         android:icon="@drawable/baseline_folder_open_24"
-        android:title="文件夹" />
+        android:title="分类" />
+    <item
+        android:id="@+id/page4"
+        android:enabled="true"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="设置" />
 </menu>

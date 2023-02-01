@@ -24,13 +24,13 @@ class ReadMediaStore {
             val indexVideoSize = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
             val indexVideoTitle = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.TITLE)
             val indexVideoPath = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-            val indexVideoFolder = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
+            val indexVideoFolder =
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
             cursor.moveToPosition(-1)
             val array = JSONArray()
             while (cursor.moveToNext()) {
                 val title = cursor.getString(indexVideoTitle)
-                val size =
-                    ByteToString.byteToString(cursor.getString(indexVideoSize).toLong())
+                val size = cursor.getString(indexVideoSize)
                 val path = cursor.getString(indexVideoPath)
                 val videoUri = Uri.withAppendedPath(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
@@ -38,11 +38,11 @@ class ReadMediaStore {
                 )
                 val folder = cursor.getString(indexVideoFolder)
                 val itemJson = JSONObject()
-                itemJson.put("title",title)
-                itemJson.put("size",size)
-                itemJson.put("path",path)
-                itemJson.put("uri",videoUri.toString())
-                itemJson.put("folder",folder)
+                itemJson.put("title", title)
+                itemJson.put("size", size)
+                itemJson.put("path", path)
+                itemJson.put("uri", videoUri.toString())
+                itemJson.put("folder", folder)
                 array.put(itemJson)
             }
             cursor.close()
@@ -57,7 +57,8 @@ class ReadMediaStore {
                 null,
                 null
             )!!
-            val indexVideoFolder = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
+            val indexVideoFolder =
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
             cursor.moveToPosition(-1)
             val array = ArrayList<String>()
             while (cursor.moveToNext()) {

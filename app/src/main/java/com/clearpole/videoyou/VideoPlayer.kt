@@ -43,7 +43,7 @@ import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
 
 
-class VideoPlayer : AppCompatActivity() {
+    class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
     private lateinit var player: ExoPlayer
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -50,10 +50,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(){
                         MediaStoreListModel(
                             title = jsonObject.getString("title"),
                             size = jsonObject.getString("size"),
-                            img = GetVideoThumbnail.getVideoThumbnail(
-                                contentResolver,
-                                Uri.parse(jsonObject.getString("uri"))
-                            ),
+                            uri = Uri.parse(jsonObject.getString("uri")),
                             path = jsonObject.getString("path"),
                             mainBind = null
                         )

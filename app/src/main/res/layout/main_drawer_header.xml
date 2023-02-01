@@ -1,28 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="200dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="bottom"
-    android:orientation="vertical">
-
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/header_back"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        app:tint="?android:attr/textColorPrimary"
-        android:src="@drawable/baseline_arrow_back_24" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/header_title"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp">
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-        android:textColor="?attr/colorOnSurface" />
+        android:layout_marginTop="60dp"
+        android:layout_marginBottom="24dp">
+        <ImageView
+            android:id="@+id/header_back"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            app:tint="?android:attr/textColorPrimary" />
+        <ImageView
+            android:id="@+id/header_model"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/outline_light_mode_24"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="26dp"
+            android:layout_alignParentEnd="true"
+            app:tint="?android:attr/textColorPrimary" />
+    </RelativeLayout>
+    <com.google.android.material.textview.MaterialTextView
+        android:textSize="32sp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="概览"
+        android:layout_marginStart="26dp" />
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        app:cardCornerRadius="12dp"
+        style="@7f13039a">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1.0">
+                <com.google.android.material.textview.MaterialTextView
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="总数量" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/all_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+            <LinearLayout
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1.0">
+                <com.google.android.material.textview.MaterialTextView
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="总体积" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/all_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        app:cardCornerRadius="8dp"
+        style="@style/Widget.Material3.CardView.Outlined">
+        <LinearLayout
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:id="@+id/notice"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/baseline_notifications_none_24"
+                android:layout_marginStart="15dp"
+                app:tint="?android:attr/textColorPrimary" />
+            <com.clearpole.videoyou.code.MarqueeTextView
+                android:textColor="?android:attr/textColorPrimary"
+                android:ellipsize="marquee"
+                android:id="@+id/notice_text"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="欢迎大家使用VideoYou！"
+                android:singleLine="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="15dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

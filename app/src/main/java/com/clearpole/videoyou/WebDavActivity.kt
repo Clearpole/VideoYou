@@ -9,9 +9,12 @@ import com.clearpole.videoyou.databinding.ActivityWebDavBinding
 import com.clearpole.videoyou.databinding.WebdavListItemBinding
 import com.clearpole.videoyou.model.WebDavModel
 import com.clearpole.videoyou.objects.VideoPlayObjects
+import com.clearpole.videoyou.utils.IsNightMode
 import com.clearpole.videoyou.utils.SetBarTransparent
+import com.clearpole.videoyou.utils.SubStringX.Companion.subStringX
 import com.drake.brv.utils.linear
 import com.drake.brv.utils.setup
+import com.gyf.immersionbar.ImmersionBar
 import com.tencent.mmkv.MMKV
 import com.thegrizzlylabs.sardineandroid.DavResource
 import com.thegrizzlylabs.sardineandroid.Sardine
@@ -25,11 +28,7 @@ class WebDavActivity : BaseActivity<ActivityWebDavBinding>() {
     @Suppress("NAME_SHADOWING")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SetBarTransparent.setBarTransparent(
-            binding.root.findViewById(R.id.web_dav_status_bar),
-            this,
-            resources
-        )
+        ImmersionBar.with(this).transparentBar().statusBarDarkFont(!IsNightMode.isNightMode(resources)).init()
         binding.topAppBar.setNavigationOnClickListener {
             finish()
         }
@@ -127,17 +126,6 @@ class WebDavActivity : BaseActivity<ActivityWebDavBinding>() {
         }
     }
 
-    private fun String.subStringX(beforeString: String?, afterString: String?): String? {
-        return if (beforeString == null && afterString != null) {
-            this.substring(0, this.indexOf(afterString))
-        } else if (beforeString != null && afterString == null) {
-            this.substring(this.indexOf(beforeString) + beforeString.length, this.length)
-        } else if (beforeString != null && afterString != null) {
-            this.subStringX(beforeString, null)!!.subStringX(null, afterString)
-        } else {
-            null
-        }
-    }
 
     private fun getWebDavData(list: List<DavResource>): MutableList<Any> {
         return mutableListOf<Any>().apply {

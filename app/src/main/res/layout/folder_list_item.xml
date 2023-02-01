@@ -33,8 +33,7 @@
                     android:id="@+id/page2_rv_item_img"
                     android:layout_width="match_parent"
                     android:layout_height="85dp"
-                    android:scaleType="centerCrop"
-                    android:src="@{model.videoTum}" />
+                    android:scaleType="centerCrop" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/page2_rv_item_text"

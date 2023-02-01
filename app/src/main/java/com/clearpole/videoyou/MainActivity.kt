@@ -16,6 +16,7 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.TranslateAnimation
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
@@ -26,19 +27,22 @@ import com.blankj.utilcode.util.ActivityUtils.startActivity
 import com.blankj.utilcode.util.KeyboardUtils
 import com.clearpole.videoyou.MainActivity.Utils.firstInto
 import com.clearpole.videoyou.adapter.MainViewPager
+import com.clearpole.videoyou.code.MarqueeTextView
 import com.clearpole.videoyou.code.PlayList
 import com.clearpole.videoyou.databinding.ActivityMainBinding
 import com.clearpole.videoyou.model.FolderModel
 import com.clearpole.videoyou.model.FolderTreeModel
+import com.clearpole.videoyou.model.MainSettingModel
 import com.clearpole.videoyou.model.MediaStoreListModel
 import com.clearpole.videoyou.model.PlayListNameModel
 import com.clearpole.videoyou.objects.MainObjects
 import com.clearpole.videoyou.objects.VideoPlayObjects
+import com.clearpole.videoyou.utils.ByteToString
 import com.clearpole.videoyou.utils.DatabaseStorage
-import com.clearpole.videoyou.utils.GetVideoThumbnail
 import com.clearpole.videoyou.utils.ReadMediaStore
 import com.clearpole.videoyou.utils.RefreshMediaStore
 import com.clearpole.videoyou.utils.SetBarTransparent
+import com.clearpole.videoyou.utils.SubStringX.Companion.subStringX
 import com.drake.brv.item.ItemExpand
 import com.drake.brv.layoutmanager.HoverGridLayoutManager
 import com.drake.brv.utils.BRV
@@ -65,15 +69,26 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URL
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
+
+    private var firstLoad = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Main.UI.start(binding, context = this, resources = resources, activity = this)
         ViewPager.UI.start(binding, activity = this, context = this)
         Main.Logic.start(binding, activity = this, context = this)
-        ViewPager.Logic.start(binding, activity = this, context = this)
     }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (firstLoad) {
+            ViewPager.Logic.start(binding, activity = this, context = this)
+            firstLoad = false
+        }
+    }
+
 
     object Main {
         object UI {
@@ -114,7 +129,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
         object Logic {
-            private var nowIn = 0
             fun start(
                 binding: ActivityMainBinding,
                 activity: Activity,
@@ -122,6 +136,23 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             ) {
                 navigationDrawer(binding, context, activity)
                 bottomNavigation(binding)
+                val noticeView = binding.mainNavigationDrawerView.getHeaderView(0)
+                    .findViewById<MarqueeTextView>(R.id.notice_text)
+                CoroutineScope(Dispatchers.IO).launch {
+                    val notice =
+                        URL("https://clearpole.gitee.io/video-you-notice/notice.html").readText().subStringX("【","】")
+                    withContext(Dispatchers.Main) {
+                        noticeView.text = notice
+                        binding.mainNavigationDrawerView.getHeaderView(0)
+                            .findViewById<LinearLayout>(R.id.notice).setOnClickListener {
+                            MaterialAlertDialogBuilder(context, MaterialAlertDialog_Material3)
+                                .setTitle("公告")
+                                .setMessage(notice)
+                                .setNegativeButton("我知道了") { _, _ -> }
+                                .show()
+                        }
+                    }
+                }
             }
 
             @SuppressLint("MissingInflatedId")
@@ -130,28 +161,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 context: Context,
                 activity: Activity
             ) {
-                binding.mainNavigationDrawerView.setCheckedItem(R.id.toHome)
                 binding.mainNavigationDrawerView.getHeaderView(0)
                     .findViewById<ImageView>(R.id.header_back).setOnClickListener {
                         binding.mainDrawerLayout.close()
                     }
                 binding.mainNavigationDrawerView.setNavigationItemSelectedListener { menuItem ->
                     when (menuItem.itemId) {
-                        R.id.toHome -> {
-                            //animationListener(binding.mainPageViewPager, binding.mainPageSetting, true)
-                            binding.mainToolbar.title = "预播放"
-                            nowIn = 0
-                            binding.mainDrawerLayout.close()
-                            menuItem.isChecked = true
-                        }
-
-                        R.id.toSettings -> {
-                            //animationListener(binding.mainPageSetting, binding.mainPageViewPager, false)
-                            binding.mainToolbar.title = "设置"
-                            nowIn = 1
-                            binding.mainDrawerLayout.close()
-                            menuItem.isChecked = true
-                        }
 
                         R.id.toSearch -> {
                             startActivity(Intent(context, SearchActivity::class.java))
@@ -296,6 +311,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         }
 
                         R.id.page3 -> {
+                            binding.mainViewpager.currentItem = 2
+                            true
+                        }
+
+                        R.id.page4 -> {
                             binding.mainViewpager.currentItem = 3
                             true
                         }
@@ -329,10 +349,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 val page1 = inflater.inflate(R.layout.main_page_playlist, null)
                 val page2 = inflater.inflate(R.layout.main_page_mediastore, null)
                 val page3 = inflater.inflate(R.layout.main_page_folder, null)
+                val page4 = inflater.inflate(R.layout.main_page_setting, null)
                 val bindingViews = ArrayList<View>()
                 bindingViews.add(page1)
                 bindingViews.add(page2)
                 bindingViews.add(page3)
+                bindingViews.add(page4)
                 binding.mainViewpager.adapter = MainViewPager(bindingViews)
 
                 val ycKv = MMKV.defaultMMKV()
@@ -360,6 +382,40 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 FolderList.folderList(bindingViews!!, context)
                 MediaStore.refreshList(bindingViews!!, context, binding)
                 FolderList.refreshList(bindingViews!!, context, binding)
+                Settings.settings(context, bindingViews!!)
+            }
+
+            object Settings {
+                fun settings(context: Context, bindingViews: ArrayList<View>) {
+                    val rv = bindingViews[3].findViewById<RecyclerView>(R.id.listview)
+                    rv.linear().setup {
+                        addType<MainSettingModel> { R.layout.main_page_setting_item }
+                    }.models = models(context)
+                }
+
+                @SuppressLint("UseCompatLoadingForDrawables")
+                private fun models(context: Context): MutableList<Any> {
+                    return mutableListOf<Any>().apply {
+                        add(
+                            MainSettingModel(
+                                "通用", "个人爱好的定制选项",
+                                context.getDrawable(R.drawable.outline_explore_24)!!
+                            )
+                        )
+                        add(
+                            MainSettingModel(
+                                "主题", "个人审美的定制选项",
+                                context.getDrawable(R.drawable.outline_auto_fix_high_24)!!
+                            )
+                        )
+                        add(
+                            MainSettingModel(
+                                "手势", "个人习惯的定制选项",
+                                context.getDrawable(R.drawable.outline_gesture_24)!!
+                            )
+                        )
+                    }
+                }
             }
 
             object Playlist {
@@ -464,15 +520,41 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 ) {
                     CoroutineScope(Dispatchers.IO).launch {
                         val models =
-                            getMediaStores(DatabaseStorage.readDataByData(), context, binding)
+                            getMediaStores(DatabaseStorage.readDataByData(), binding)
                         launch(Dispatchers.Main) {
                             bindingViews[1].findViewById<RecyclerView>(R.id.listview).linear()
                                 .setup {
                                     addType<MediaStoreListModel> { R.layout.media_store_list_item }
                                 }.models = models
                             binding.mainNavigationDrawerView.getHeaderView(0)
-                                .findViewById<TextView>(R.id.header_title).text =
-                                "您的设备\n共有${bindingViews[1].findViewById<RecyclerView>(R.id.listview)?.adapter?.itemCount}个视频"
+                                .findViewById<MaterialTextView>(R.id.all_count).text =
+                                bindingViews[1].findViewById<RecyclerView>(R.id.listview)?.adapter?.itemCount.toString()
+                            binding.mainNavigationDrawerView.getHeaderView(0)
+                                .findViewById<MaterialTextView>(R.id.all_size).text =
+                                ByteToString.byteToString(MainObjects.allSize)
+                        }
+                    }
+                }
+
+                private fun getMediaStores(
+                    kv: JSONArray,
+                    binding: ActivityMainBinding
+                ): MutableList<Any> {
+                    return mutableListOf<Any>().apply {
+                        MainObjects.allSize = 0
+                        for (index in 0 until kv.length()) {
+                            val jsonObject = JSONObject(kv.getString(index))
+                            val size = jsonObject.getString("size").toLong()
+                            MainObjects.allSize = MainObjects.allSize + size
+                            add(
+                                MediaStoreListModel(
+                                    title = jsonObject.getString("title"),
+                                    size = ByteToString.byteToString(size),
+                                    uri = Uri.parse(jsonObject.getString("uri")),
+                                    path = jsonObject.getString("path"),
+                                    mainBind = binding
+                                )
+                            )
                         }
                     }
                 }
@@ -504,30 +586,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 }
                             }
                         }
-                }
-
-                private fun getMediaStores(
-                    kv: JSONArray,
-                    context: Context,
-                    binding: ActivityMainBinding
-                ): MutableList<Any> {
-                    return mutableListOf<Any>().apply {
-                        for (index in 0 until kv.length()) {
-                            val jsonObject = JSONObject(kv.getString(index))
-                            add(
-                                MediaStoreListModel(
-                                    title = jsonObject.getString("title"),
-                                    size = jsonObject.getString("size"),
-                                    img = GetVideoThumbnail.getVideoThumbnail(
-                                        context.contentResolver,
-                                        Uri.parse(jsonObject.getString("uri"))
-                                    ),
-                                    path = jsonObject.getString("path"),
-                                    mainBind = binding
-                                )
-                            )
-                        }
-                    }
                 }
 
                 fun refreshList(
@@ -683,17 +741,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         when (position) {
                             0 -> {
                                 binding.mainNavigationView.selectedItemId = R.id.page1
-                                binding.mainToolbar.title = "预播放"
+                                binding.mainToolbar.title = "播放列表"
                             }
 
                             1 -> {
                                 binding.mainNavigationView.selectedItemId = R.id.page2
-                                binding.mainToolbar.title = "媒体库"
+                                binding.mainToolbar.title = "全部媒体"
                             }
 
                             2 -> {
                                 binding.mainNavigationView.selectedItemId = R.id.page3
-                                binding.mainToolbar.title = "文件夹"
+                                binding.mainToolbar.title = "媒体所属"
+                            }
+
+                            3 -> {
+                                binding.mainNavigationView.selectedItemId = R.id.page4
+                                binding.mainToolbar.title = "软件设置"
                             }
                         }
                     }

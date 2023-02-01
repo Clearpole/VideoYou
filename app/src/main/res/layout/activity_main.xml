@@ -48,9 +48,7 @@
                 android:layout_height="wrap_content"
                 app:itemBackground="@null"
                 app:itemRippleColor="@null"
-                app:labelVisibilityMode="labeled"
-                app:menu="@menu/main_bottom_navigation_menu"
-                tools:ignore="VisualLintBottomNav" />
+                app:menu="@menu/main_bottom_navigation_menu" />
         </LinearLayout>
 
         <RelativeLayout

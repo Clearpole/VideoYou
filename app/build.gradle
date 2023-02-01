@@ -33,15 +33,7 @@ android {
 
     buildTypes {
         release {
-            // 混淆
-            minifyEnabled true
-            // Zipalign优化
             zipAlignEnabled true
-            // 移除无用的resource文件
-            shrinkResources true
-            // 前一部分代表系统默认的android程序的混淆文件，该文件已经包含了基本的混淆声明，后一个文件是自己的定义混淆文件
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
             applicationVariants.all { variant ->
                 variant.outputs.all {
                     def fileName = "${appName()}-${version()}"
@@ -74,7 +66,7 @@ android {
 }
 
 static def version() {
-    return "0.2.4"
+    return "0.3.2"
 }
 
 static def isCanary() {
@@ -86,7 +78,7 @@ static def appName() {
 }
 
 static def canary() {
-    return "Canary02"
+    return "Canary01"
 }
 
 static def releaseTime() {
@@ -100,7 +92,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.preference:preference:1.2.0'
     api fileTree(include: ['*.jar'], dir: 'libs')
-    implementation files('libs\\json.jar')
+    implementation files('libs/json.jar')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -131,8 +123,7 @@ dependencies {
     // MMKV —— 基于 mmap 的高性能通用 key-value 组件：https://github.com/Tencent/MMKV/
     implementation 'com.tencent:mmkv:1.2.15'
     // exoplayer 视频播放框架
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.18.2'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.2'
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.2'
     // webdav框架：https://github.com/thegrizzlylabs/sardine-android
     implementation 'com.thegrizzlylabs.sardine-android:sardine-android:0.8'
     // https://github.com/Blankj/AndroidUtilCode/
