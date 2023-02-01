@@ -1,6 +1,9 @@
 package com.clearpole.videoyou
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -8,12 +11,14 @@ import android.widget.AdapterView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.clearpole.videoyou.databinding.ActivitySettingBinding
 import com.clearpole.videoyou.model.SettingThemeModel
 import com.clearpole.videoyou.utils.IsNightMode
 import com.clearpole.videoyou.utils.SettingsItemsUntil
 import com.drake.brv.utils.linear
 import com.drake.brv.utils.setup
+import com.google.android.material.R.style.MaterialAlertDialog_Material3
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gyf.immersionbar.ImmersionBar
 
@@ -39,22 +44,73 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
             "手势" -> {
 
             }
+
+            "关于" -> {
+                about()
+            }
+        }
+    }
+
+    @SuppressLint("MissingInflatedId")
+    private fun about() {
+        binding.settingAbout.root.visibility = View.VISIBLE
+        binding.settingAbout.intoQq.setOnClickListener {
+            MaterialAlertDialogBuilder(
+                this,
+                MaterialAlertDialog_Material3
+            )
+                .setTitle("加入QQ频道")
+                .setCancelable(false)
+                .setMessage("加入频道可获取最新版本更新，是否访问外部链接以加入QQ频道？")
+                .setNegativeButton("取消") { _, _ -> }
+                .setPositiveButton("加入QQ频道") { _, _ ->
+                    val uri = Uri.parse("https://pd.qq.com/s/61vf6d5qi")
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    startActivity(intent)
+                }
+                .show()
+        }
+        binding.settingAbout.intoWeb.setOnClickListener {
+            val uri =
+                Uri.parse("https://clearpole.gitee.io/videoyou-website/")
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            startActivity(intent)
+        }
+        binding.settingAbout.intoDon.setOnClickListener {
+            val view = this.layoutInflater.inflate(R.layout.setting_about_do, null)
+            Glide.with(this)
+                .load("https://gitee.com/clearpole/VideoYou-WebSite/raw/master/img/jz.png")
+                .into(view.findViewById(R.id.don))
+            MaterialAlertDialogBuilder(this, MaterialAlertDialog_Material3)
+                .setTitle("捐献")
+                .setMessage("捐赠并不会对你带来任何好处，但可以帮助开发者坚定维护软件下信心。感谢每一位投喂的人！")
+                .setView(view)
+                .setNegativeButton("确定") { _, _ -> }
+                .show()
         }
     }
 
     private fun currency() {
         binding.settingCurrency.root.visibility = View.VISIBLE
-        binding.settingCurrency.sDBL.isChecked = SettingsItemsUntil.readSettingData("isAutoPicture").toBoolean()
+        binding.settingCurrency.sDBL.isChecked =
+            SettingsItemsUntil.readSettingData("isAutoPicture").toBoolean()
         binding.settingCurrency.isAutoPicRoot.setOnClickListener {
             val isTrue = SettingsItemsUntil.readSettingData("isAutoPicture")
             binding.settingCurrency.sDBL.isChecked = !isTrue.toBoolean()
-            SettingsItemsUntil.writeSettingData("isAutoPicture",isTrue.toBoolean().not().toString())
+            SettingsItemsUntil.writeSettingData(
+                "isAutoPicture",
+                isTrue.toBoolean().not().toString()
+            )
         }
-        binding.settingCurrency.sDBV.isChecked = SettingsItemsUntil.readSettingData("isDialogPlayer").toBoolean()
+        binding.settingCurrency.sDBV.isChecked =
+            SettingsItemsUntil.readSettingData("isDialogPlayer").toBoolean()
         binding.settingCurrency.isDialogPlayerRoot.setOnClickListener {
             val isTrue = SettingsItemsUntil.readSettingData("isDialogPlayer")
             binding.settingCurrency.sDBV.isChecked = !isTrue.toBoolean()
-            SettingsItemsUntil.writeSettingData("isDialogPlayer",isTrue.toBoolean().not().toString())
+            SettingsItemsUntil.writeSettingData(
+                "isDialogPlayer",
+                isTrue.toBoolean().not().toString()
+            )
         }
     }
 

@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.size
@@ -416,6 +417,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
             object Settings {
                 fun settings(context: Context, bindingViews: ArrayList<View>) {
+                    bindingViews[3].findViewById<RelativeLayout>(R.id.intoAbout).setOnClickListener {
+                        val int = Intent(context,SettingActivity::class.java)
+                        int.putExtra("name","关于")
+                        startActivity(int)
+                    }
                     val rv = bindingViews[3].findViewById<RecyclerView>(R.id.listview)
                     rv.linear().setup {
                         addType<MainSettingModel> { R.layout.main_page_setting_item }
@@ -457,6 +463,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     val addActionButton =
                         bindingViews[0].findViewById<FloatingActionButton>(R.id.add_playlist)
                     addActionButton.setOnClickListener {
+                        ToastUtils.show("未全面开放，请耐心等待")
+                    }
+                    /*addActionButton.setOnClickListener {
                         val view =
                             activity.layoutInflater.inflate(R.layout.material_dialog_edit_1, null)
                         view.findViewById<TextInputLayout>(R.id.edit_layout).hint = "请输入列表名称"
@@ -508,7 +517,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         bindingViews[0].findViewById<MaterialTextView>(R.id.not_found_playlist).visibility =
                             View.GONE
                         loadPlayList(bindingViews)
-                    }
+                    }*/
                 }
 
                 fun loadPlayList(bindingViews: ArrayList<View>) {
@@ -596,6 +605,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 ) {
                     bindingViews[1].findViewById<FloatingActionButton>(R.id.add_playlist_file)
                         .setOnClickListener {
+                            ToastUtils.show("未全面开放，请耐心等待")
+                        }
+                    /*bindingViews[1].findViewById<FloatingActionButton>(R.id.add_playlist_file)
+                        .setOnClickListener {
                             if (!MainObjects.isChoose) {
                                 (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_check_24))
                                 binding.mainToolbar.title = "已选择 0 项"
@@ -614,7 +627,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     }
                                 }
                             }
-                        }
+                        }*/
                 }
 
                 fun refreshList(
