@@ -3,7 +3,4 @@
     <item
         android:id="@+id/menu_refreshMediaStore"
         android:title="@string/reFreshMediaStore" />
-    <item
-        android:id="@+id/menu_intoDev"
-        android:title="@string/intoDevelopMode" />
 </menu>

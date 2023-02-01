@@ -12,11 +12,11 @@ import com.clearpole.videoyou.objects.MainObjects
 import com.clearpole.videoyou.objects.VideoPlayObjects
 import com.clearpole.videoyou.utils.GetVideoThumbnail
 import com.drake.brv.BindingAdapter
-import com.drake.brv.item.ItemAttached
 import com.drake.brv.item.ItemBind
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,8 +27,7 @@ data class MediaStoreListModel(
     val path: String,
     val mainBind: ActivityMainBinding?
 ) :
-    ItemBind, ItemAttached {
-    private var itemVisible: Boolean = false
+    ItemBind {
     override fun onBind(holder: BindingAdapter.BindingViewHolder) {
         val binding = MediaStoreListItemBinding.bind(holder.itemView)
         binding.itemName.text = title
@@ -54,25 +53,16 @@ data class MediaStoreListModel(
                 startActivity(intent)
             }
         }
-        holder.itemView.postDelayed({
-            if (itemVisible) {
-                CoroutineScope(Dispatchers.IO).launch{
-                    val bitmap = GetVideoThumbnail.getVideoThumbnail(holder.context.contentResolver, uri)
-                    withContext(Dispatchers.Main){
-                        Glide.with(holder.context)
-                            .load(bitmap)
-                            .transition(DrawableTransitionOptions.withCrossFade()).into(binding.itemCover)
-                    }
-                }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val bitmap = GetVideoThumbnail.getVideoThumbnail(holder.context.contentResolver, uri)
+            withContext(Dispatchers.Main) {
+                Glide.with(holder.context)
+                    .load(bitmap)
+                    .transition(DrawableTransitionOptions.withCrossFade()).into(binding.itemCover)
             }
-        }, 500)
-    }
+            this.cancel()
+        }
 
-    override fun onViewAttachedToWindow(holder: BindingAdapter.BindingViewHolder) {
-        itemVisible = true
-    }
-
-    override fun onViewDetachedFromWindow(holder: BindingAdapter.BindingViewHolder) {
-        itemVisible = false
     }
 }

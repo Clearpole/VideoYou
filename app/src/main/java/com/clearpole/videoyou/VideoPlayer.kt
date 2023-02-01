@@ -43,6 +43,7 @@ import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
 
 
+    @Suppress("UNUSED_EXPRESSION")
     class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
     private lateinit var player: ExoPlayer
 
@@ -88,6 +89,9 @@ import java.lang.Thread.sleep
             finish()
         }
         // 设置播放/暂停
+        binding.videoPlayerBottomBarRoot.videoPlayerBottomBar.setOnClickListener {
+            true
+        }
         binding.videoPlayerBottomBarRoot.videoPlayerScreenRoot.setOnClickListener {
             if (VideoPlayerObjects.isInFullScreen) {
                 this.window.clearFlags(

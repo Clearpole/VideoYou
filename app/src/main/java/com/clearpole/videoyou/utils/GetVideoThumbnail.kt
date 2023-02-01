@@ -13,23 +13,27 @@ class GetVideoThumbnail {
         @Suppress("DEPRECATION", "UNUSED_EXPRESSION")
         @SuppressLint("Range")
         fun getVideoThumbnail(cr: ContentResolver, uri: Uri?): Bitmap? {
-            var bitmap: Bitmap?
-            val options = BitmapFactory.Options()
-            options.inDither = false
-            options.inPreferredConfig = Bitmap.Config.RGB_565
-            val cursor = cr.query(uri!!, arrayOf(MediaStore.Video.Media._ID), null, null, null)
-            if (cursor == null || cursor.count == 0) {
+            return try {
+                var bitmap: Bitmap?
+                val options = BitmapFactory.Options()
+                options.inDither = false
+                options.inPreferredConfig = Bitmap.Config.RGB_565
+                val cursor = cr.query(uri!!, arrayOf(MediaStore.Video.Media._ID), null, null, null)
+                if (cursor == null || cursor.count == 0) {
+                    null
+                }
+                cursor!!.moveToFirst()
+                val videoId = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media._ID))
+                    ?: null //image id in image table.s
+                cursor.close()
+                val videoIdLong = videoId!!.toLong()
+                bitmap = MediaStore.Video.Thumbnails.getThumbnail(
+                    cr, videoIdLong, MediaStore.Images.Thumbnails.MINI_KIND, options
+                )
+                bitmap
+            } catch (e: Exception) {
                 null
             }
-            cursor!!.moveToFirst()
-            val videoId = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media._ID))
-                ?: null //image id in image table.s
-            cursor.close()
-            val videoIdLong = videoId!!.toLong()
-            bitmap = MediaStore.Video.Thumbnails.getThumbnail(
-                cr, videoIdLong, MediaStore.Images.Thumbnails.MINI_KIND, options
-            )
-            return bitmap
         }
     }
 }

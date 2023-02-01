@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#CC000000"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/video_player_topBar_back"

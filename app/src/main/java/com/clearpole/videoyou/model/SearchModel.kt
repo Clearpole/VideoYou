@@ -1,42 +1,47 @@
 package com.clearpole.videoyou.model
 
-import android.content.ContentResolver
+import android.content.Intent
 import android.net.Uri
+import com.blankj.utilcode.util.ActivityUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.clearpole.videoyou.databinding.FolderListItemBinding
+import com.clearpole.videoyou.VideoPlayer
+import com.clearpole.videoyou.databinding.SearchItemBinding
+import com.clearpole.videoyou.objects.VideoPlayObjects
 import com.clearpole.videoyou.utils.GetVideoThumbnail
 import com.drake.brv.BindingAdapter
 import com.drake.brv.item.ItemBind
-import com.drake.brv.item.ItemExpand
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
-open class FolderModel(
-    override var itemGroupPosition: Int = 0,
-    override var itemExpand: Boolean = false,
-    override var itemSublist: List<Any?>? = null,
+data class SearchModel(
     val title: String,
+    val size: String,
     val uri: Uri,
-    val contentResolver: ContentResolver,
     val path: String
-) : ItemExpand, ItemBind {
-    val videoTitle get() = title
-
+) :
+    ItemBind {
     override fun onBind(holder: BindingAdapter.BindingViewHolder) {
-
-        val binding = holder.getBinding<FolderListItemBinding>()
+        val binding = holder.getBinding<SearchItemBinding>()
+        binding.itemText.text = title
+        binding.searchItem.setOnClickListener {
+            VideoPlayObjects.paths = path
+            VideoPlayObjects.title = title
+            VideoPlayObjects.type = "LOCAL"
+            val intent = Intent(holder.context, VideoPlayer::class.java)
+            ActivityUtils.startActivity(intent)
+        }
         CoroutineScope(Dispatchers.IO).launch {
-            val bitmap = GetVideoThumbnail.getVideoThumbnail(contentResolver, uri)
+            val bitmap =
+                GetVideoThumbnail.getVideoThumbnail(holder.context.contentResolver, uri)
             withContext(Dispatchers.Main) {
                 Glide.with(holder.context)
                     .load(bitmap)
                     .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(binding.page2RvItemImg)
+                    .into(binding.itemImg)
             }
             this.cancel()
         }

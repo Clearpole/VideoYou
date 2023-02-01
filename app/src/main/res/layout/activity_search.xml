@@ -16,19 +16,10 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lineSpacingMultiplier="1.2"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:paddingBottom="16dp"
-                android:text="搜索结果" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/search_rv"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -37,6 +28,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="0dp"
+            app:layout_collapseMode="pin"
+            app:navigationIcon="@drawable/baseline_arrow_back_small"
+            app:navigationIconTint="?android:attr/textColorPrimary"
+            app:title="搜索" />
 
         <com.google.android.material.search.SearchBar
             android:id="@+id/cat_search_bar"
