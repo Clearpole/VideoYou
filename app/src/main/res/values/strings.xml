@@ -15,4 +15,11 @@
     <string name="more">更多</string>
     <string name="fileManager">文件管理</string>
     <string name="lockFile">隐私文件</string>
+    <string name="playerBackDialog">播放界面返回弹窗</string>
+    <string name="playerBackDialogInfo">在播放视频的时候退出显示弹窗</string>
+    <string name="darkMode">深色模式</string>
+    <string name="AppTheme">应用主题</string>
+    <string name="crash">崩溃了！\n我真的崩溃了！</string>
+    <string name="leavePlayerAutoPic">离开播放器打开小窗</string>
+    <string name="leavePlayerAutoPicInfo">在播放时离开播放界面自动打开小窗</string>
 </resources>

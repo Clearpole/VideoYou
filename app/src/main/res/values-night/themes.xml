@@ -1,4 +1,120 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.VideoYou" parent="Theme.Material3.Dark.NoActionBar" />
+
+    <style name="cxw" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/cxw_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/cxw_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/cxw_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/cxw_theme_dark_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/cxw_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/cxw_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/cxw_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/cxw_theme_dark_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/cxw_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/cxw_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/cxw_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/cxw_theme_dark_onTertiaryContainer</item>
+        <item name="colorError">@color/cxw_theme_dark_error</item>
+        <item name="colorErrorContainer">@color/cxw_theme_dark_errorContainer</item>
+        <item name="colorOnError">@color/cxw_theme_dark_onError</item>
+        <item name="colorOnErrorContainer">@color/cxw_theme_dark_onErrorContainer</item>
+        <item name="android:colorBackground">@color/cxw_theme_dark_background</item>
+        <item name="colorOnBackground">@color/cxw_theme_dark_onBackground</item>
+        <item name="colorSurface">@color/cxw_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/cxw_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/cxw_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/cxw_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/cxw_theme_dark_outline</item>
+        <item name="colorOnSurfaceInverse">@color/cxw_theme_dark_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/cxw_theme_dark_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/cxw_theme_dark_inversePrimary</item>
+    </style>
+
+    <style name="hzt" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/hzt_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/hzt_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/hzt_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/hzt_theme_dark_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/hzt_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/hzt_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/hzt_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/hzt_theme_dark_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/hzt_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/hzt_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/hzt_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/hzt_theme_dark_onTertiaryContainer</item>
+        <item name="colorError">@color/hzt_theme_dark_error</item>
+        <item name="colorErrorContainer">@color/hzt_theme_dark_errorContainer</item>
+        <item name="colorOnError">@color/hzt_theme_dark_onError</item>
+        <item name="colorOnErrorContainer">@color/hzt_theme_dark_onErrorContainer</item>
+        <item name="android:colorBackground">@color/hzt_theme_dark_background</item>
+        <item name="colorOnBackground">@color/hzt_theme_dark_onBackground</item>
+        <item name="colorSurface">@color/hzt_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/hzt_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/hzt_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/hzt_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/hzt_theme_dark_outline</item>
+        <item name="colorOnSurfaceInverse">@color/hzt_theme_dark_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/hzt_theme_dark_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/hzt_theme_dark_inversePrimary</item>
+    </style>
+
+    <style name="szy" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/szy_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/szy_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/szy_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/szy_theme_dark_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/szy_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/szy_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/szy_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/szy_theme_dark_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/szy_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/szy_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/szy_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/szy_theme_dark_onTertiaryContainer</item>
+        <item name="colorError">@color/szy_theme_dark_error</item>
+        <item name="colorErrorContainer">@color/szy_theme_dark_errorContainer</item>
+        <item name="colorOnError">@color/szy_theme_dark_onError</item>
+        <item name="colorOnErrorContainer">@color/szy_theme_dark_onErrorContainer</item>
+        <item name="android:colorBackground">@color/szy_theme_dark_background</item>
+        <item name="colorOnBackground">@color/szy_theme_dark_onBackground</item>
+        <item name="colorSurface">@color/szy_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/szy_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/szy_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/szy_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/szy_theme_dark_outline</item>
+        <item name="colorOnSurfaceInverse">@color/szy_theme_dark_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/szy_theme_dark_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/szy_theme_dark_inversePrimary</item>
+    </style>
+
+    <style name="xfy" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/xfy_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/xfy_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/xfy_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/xfy_theme_dark_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/xfy_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/xfy_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/xfy_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/xfy_theme_dark_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/xfy_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/xfy_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/xfy_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/xfy_theme_dark_onTertiaryContainer</item>
+        <item name="colorError">@color/xfy_theme_dark_error</item>
+        <item name="colorErrorContainer">@color/xfy_theme_dark_errorContainer</item>
+        <item name="colorOnError">@color/xfy_theme_dark_onError</item>
+        <item name="colorOnErrorContainer">@color/xfy_theme_dark_onErrorContainer</item>
+        <item name="android:colorBackground">@color/xfy_theme_dark_background</item>
+        <item name="colorOnBackground">@color/xfy_theme_dark_onBackground</item>
+        <item name="colorSurface">@color/xfy_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/xfy_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/xfy_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/xfy_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/xfy_theme_dark_outline</item>
+        <item name="colorOnSurfaceInverse">@color/xfy_theme_dark_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/xfy_theme_dark_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/xfy_theme_dark_inversePrimary</item>
+    </style>
 </resources>

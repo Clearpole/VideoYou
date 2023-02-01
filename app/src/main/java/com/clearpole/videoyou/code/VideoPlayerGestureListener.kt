@@ -20,7 +20,9 @@ import com.google.android.material.slider.Slider
 class VideoPlayerGestureListener {
     companion object {
         @Suppress("DEPRECATION")
-        @SuppressLint("ClickableViewAccessibility", "SetTextI18n", "ResourceAsColor")
+        @SuppressLint("ClickableViewAccessibility", "SetTextI18n", "ResourceAsColor",
+            "ResourceType"
+        )
         fun gestureListener(
             context: Context,
             activityBinding: ActivityVideoPlayerBinding,
@@ -148,6 +150,26 @@ class VideoPlayerGestureListener {
                 }
 
             })
+
+            activityBinding.videoPlayerAssemblyRoot.isPlayPauseRoot.setOnClickListener {
+                if (isPlayMode) {
+                    Glide.with(context).load(R.drawable.baseline_play_arrow_24)
+                        .into(activityBinding.videoPlayerAssemblyRoot.isPlayPause)
+                    activityBinding.videoPlayerAssemblyRoot.isPlayPauseRoot.visibility = View.VISIBLE
+                    activityBinding.videoPlayerAssemblyRoot.isPlayPauseRoot.startAnimation(alpha01)
+                    player!!.pause()
+                    activityBinding.videoModel?.pauseImg = Drawable.createFromXml(resources,resources.getXml(R.drawable.baseline_play_arrow_24))
+                    isPlayMode = false
+                }else{
+                    Glide.with(context).load(R.drawable.baseline_pause_24)
+                        .into(activityBinding.videoPlayerAssemblyRoot.isPlayPause)
+                    activityBinding.videoPlayerAssemblyRoot.isPlayPauseRoot.visibility = View.GONE
+                    activityBinding.videoPlayerAssemblyRoot.isPlayPauseRoot.startAnimation(alpha10)
+                    player!!.play()
+                    activityBinding.videoModel?.pauseImg = Drawable.createFromXml(resources,resources.getXml(R.drawable.baseline_pause_24))
+                    isPlayMode = true
+                }
+            }
 
             // 本方法涵盖：长按屏幕事件
             activityBinding.videoPlayerControlRoot.setOnLongClickListener {

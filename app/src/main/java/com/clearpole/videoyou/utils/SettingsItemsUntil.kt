@@ -15,9 +15,9 @@ class SettingsItemsUntil {
             if (kV.decodeInt("first")==1){
             }else{
                 kV.encode("darkMode","0")
-                kV.encode("isRipple","false")
                 kV.encode("isAutoPicture","false")
                 kV.encode("first",1)
+                kV.encode("isDialogPlayer",true)
             }
         }
     }

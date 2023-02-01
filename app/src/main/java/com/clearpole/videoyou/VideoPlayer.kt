@@ -84,6 +84,9 @@ import java.lang.Thread.sleep
                 binding.videoModel?.pauseImg = draw
             }
         }
+        binding.videoPlayerTopBarRoot.videoPlayerTopBarBack.setOnClickListener {
+            finish()
+        }
         // 设置播放/暂停
         binding.videoPlayerBottomBarRoot.videoPlayerScreenRoot.setOnClickListener {
             if (VideoPlayerObjects.isInFullScreen) {
@@ -254,44 +257,46 @@ import java.lang.Thread.sleep
         }
     }
 
-    fun headers(): DataSource.Factory? {
-        val headersMap: MutableMap<String, String> = HashMap()
-        headersMap["Authorization"] = "Basic YWRtaW46MzQxMjI2"
-        headersMap["Accept"] = "..."
-        return DefaultHttpDataSource.Factory().setDefaultRequestProperties(headersMap)
-            .setUserAgent("UA")
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun finish() {
-        if (!VideoPlayerObjects.isAutoFinish) {
-            MaterialAlertDialogBuilder(
-                this,
-                com.google.android.material.R.style.MaterialAlertDialog_Material3_Title_Text_CenterStacked
-            )
-                .setTitle("退出播放")
-                .setMessage("您确定要退出播放？还是进入小窗？")
-                .setPositiveButton("取消") { _, _ -> }
-                .setNegativeButton("进入小窗") { _, _ ->
-                    Log.w("小窗宽度", VideoPlayerObjects.videoWidth.toString())
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        val builder = PictureInPictureParams.Builder()
-                        val rational =
-                            Rational(VideoPlayerObjects.videoWidth, VideoPlayerObjects.videoHeight)
-                        builder.setAspectRatio(rational)
-                        this.enterPictureInPictureMode(builder.build())
-                    } else {
-                        ToastUtils.show("您的系统版本不支持画中画")
+        if (SettingsItemsUntil.readSettingData("isDialogPlayer").toBoolean()) {
+            if (!VideoPlayerObjects.isAutoFinish) {
+                MaterialAlertDialogBuilder(
+                    this,
+                    com.google.android.material.R.style.MaterialAlertDialog_Material3_Title_Text_CenterStacked
+                )
+                    .setTitle("退出播放")
+                    .setMessage("您确定要退出播放？还是进入小窗？")
+                    .setPositiveButton("取消") { _, _ -> }
+                    .setNegativeButton("进入小窗") { _, _ ->
+                        Log.w("小窗宽度", VideoPlayerObjects.videoWidth.toString())
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            val builder = PictureInPictureParams.Builder()
+                            val rational =
+                                Rational(
+                                    VideoPlayerObjects.videoWidth,
+                                    VideoPlayerObjects.videoHeight
+                                )
+                            builder.setAspectRatio(rational)
+                            this.enterPictureInPictureMode(builder.build())
+                        } else {
+                            ToastUtils.show("您的系统版本不支持画中画")
+                        }
                     }
-                }
-                .setNeutralButton("退出播放") { _, _ ->
-                    player.release()
-                    VideoPlayerObjects.isFirstLod = true
-                    VideoPlayerObjects.isAutoFinish = true
-                    super.finish()
-                }
-                .show()
-        } else {
+                    .setNeutralButton("退出播放") { _, _ ->
+                        player.release()
+                        VideoPlayerObjects.isFirstLod = true
+                        VideoPlayerObjects.isAutoFinish = true
+                        super.finish()
+                    }
+                    .show()
+            } else {
+                VideoPlayerObjects.isAutoFinish = true
+                super.finish()
+            }
+        }else{
+            player.release()
+            VideoPlayerObjects.isFirstLod = true
             VideoPlayerObjects.isAutoFinish = true
             super.finish()
         }

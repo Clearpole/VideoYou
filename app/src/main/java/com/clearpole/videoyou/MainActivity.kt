@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -13,17 +14,17 @@ import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
-import android.view.animation.AnimationUtils
-import android.view.animation.TranslateAnimation
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.*
 import com.blankj.utilcode.util.ActivityUtils.startActivity
+import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.clearpole.videoyou.MainActivity.Utils.firstInto
 import com.clearpole.videoyou.adapter.MainViewPager
@@ -42,6 +43,7 @@ import com.clearpole.videoyou.utils.DatabaseStorage
 import com.clearpole.videoyou.utils.ReadMediaStore
 import com.clearpole.videoyou.utils.RefreshMediaStore
 import com.clearpole.videoyou.utils.SetBarTransparent
+import com.clearpole.videoyou.utils.SettingsItemsUntil
 import com.clearpole.videoyou.utils.SubStringX.Companion.subStringX
 import com.drake.brv.item.ItemExpand
 import com.drake.brv.layoutmanager.HoverGridLayoutManager
@@ -71,6 +73,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
 
+@Suppress("DEPRECATED_IDENTITY_EQUALS")
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     private var firstLoad = true
@@ -89,6 +92,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        AppUtils.relaunchApp()
+    }
 
     object Main {
         object UI {
@@ -106,7 +113,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 binding: ActivityMainBinding,
                 context: Context
             ) {
-                binding.mainToolbar.title = "预播放"
+                binding.mainToolbar.title = "播放列表"
                 binding.mainToolbar.setNavigationOnClickListener {
                     binding.mainDrawerLayout.open()
                 }
@@ -129,6 +136,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
         object Logic {
+            @SuppressLint("UseCompatLoadingForDrawables", "SwitchIntDef")
             fun start(
                 binding: ActivityMainBinding,
                 activity: Activity,
@@ -140,17 +148,36 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     .findViewById<MarqueeTextView>(R.id.notice_text)
                 CoroutineScope(Dispatchers.IO).launch {
                     val notice =
-                        URL("https://clearpole.gitee.io/video-you-notice/notice.html").readText().subStringX("【","】")
+                        URL("https://clearpole.gitee.io/video-you-notice/notice.html").readText()
+                            .subStringX("【", "】")
                     withContext(Dispatchers.Main) {
                         noticeView.text = notice
                         binding.mainNavigationDrawerView.getHeaderView(0)
                             .findViewById<LinearLayout>(R.id.notice).setOnClickListener {
-                            MaterialAlertDialogBuilder(context, MaterialAlertDialog_Material3)
-                                .setTitle("公告")
-                                .setMessage(notice)
-                                .setNegativeButton("我知道了") { _, _ -> }
-                                .show()
-                        }
+                                MaterialAlertDialogBuilder(context, MaterialAlertDialog_Material3)
+                                    .setTitle("公告")
+                                    .setMessage(notice)
+                                    .setNegativeButton("我知道了") { _, _ -> }
+                                    .show()
+                            }
+                    }
+                }
+                val darkModeView = binding.mainNavigationDrawerView.getHeaderView(0)
+                    .findViewById<ImageView>(R.id.header_mode)
+
+                if (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK === Configuration.UI_MODE_NIGHT_YES) {
+                    darkModeView.setImageDrawable(context.getDrawable(R.drawable.outline_light_mode_24))
+                } else {
+                    darkModeView.setImageDrawable(context.getDrawable(R.drawable.outline_mode_night_24))
+                }
+
+                darkModeView.setOnClickListener {
+                    if (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK === Configuration.UI_MODE_NIGHT_YES) {
+                        SettingsItemsUntil.writeSettingData("darkMode", "2")
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    } else {
+                        SettingsItemsUntil.writeSettingData("darkMode", "1")
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                     }
                 }
             }
@@ -189,6 +216,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
             }
 
+            @SuppressLint("CutPasteId")
             private fun stream(context: Context, activity: Activity) {
                 val view = activity.layoutInflater.inflate(R.layout.material_dialog_edit_1, null)
                 view.findViewById<TextInputLayout>(R.id.edit_layout).hint = "输入视频直链"
@@ -200,7 +228,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     .setView(view)
                     .setNegativeButton("开看！") { _, _ ->
                         VideoPlayObjects.type = "INTERNET"
-                        VideoPlayObjects.title = "网络视频"
+                        VideoPlayObjects.title =
+                            view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
                         VideoPlayObjects.paths =
                             view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
                         startActivity(Intent(context, VideoPlayer::class.java))
@@ -815,6 +844,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     }
                                     CoroutineScope(Dispatchers.IO).launch {
                                         ycKv.encode("isFirst", "true")
+                                        SettingsItemsUntil.initializationItems()
                                         if (!DatabaseStorage.writeDataToData(
                                                 ReadMediaStore.start(
                                                     context.contentResolver
@@ -853,25 +883,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     object Anim {
         fun anim(context: Context) {
-            val slateAnimaRightSlideIn = TranslateAnimation(
-                1000f, -0f, 0f, 0f
-            )
-            slateAnimaRightSlideIn.duration = 200
-
-            val slateAnimaLeftSlideOut = TranslateAnimation(
-                0f, -1000f, 0f, 0f
-            )
-            slateAnimaLeftSlideOut.duration = 200
-
-            val slateAnimaBottomSlideIn = AnimationUtils.loadAnimation(
-                context,
-                com.google.android.material.R.anim.abc_slide_in_bottom
-            )
-            //slateAnimaBottomSlideIn.duration = 150L
-            val slateAnimaBottomSlideOut = AnimationUtils.loadAnimation(
-                context,
-                com.google.android.material.R.anim.abc_slide_out_bottom
-            )
         }
     }
 }
