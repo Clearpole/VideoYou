@@ -15,9 +15,10 @@
 ---
 
 ### 软件介绍
-:::info
+
+
 VideoYou 是一款开源的本地视频播放器，整体 UI 按照 Material Design 3 设计语言规范，同时在 Android 12+ 设备上，会开启动态取色。最低 SDK 版本为 Android 5.0。
-:::
+
 
 <br/>
 
