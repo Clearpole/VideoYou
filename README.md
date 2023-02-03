@@ -26,9 +26,8 @@ VideoYou 是一款开源的本地视频播放器，整体 UI 按照 Material Des
 
 目前获取渠道有：
 1. 软件官网 [查看链接](https://clearpole.gitee.io/videoyou-website/)
-2. 项目仓库 [查看链接](https://github.com/Clearpole/VideoYou/releases)
-3. QQ频道 [查看链接](https://pd.qq.com/s/61vf6d5qi)
-4. QQ群聊 [查看链接](https://jq.qq.com/?_wv=1027&k=jhToOOG8)
+2. QQ频道 [查看链接](https://pd.qq.com/s/61vf6d5qi)
+3. QQ群聊 [查看链接](https://jq.qq.com/?_wv=1027&k=jhToOOG8)
 
 
 Github 源码仓库：[查看链接](https://github.com/Clearpole/VideoYou-Code-View/tree/main)
