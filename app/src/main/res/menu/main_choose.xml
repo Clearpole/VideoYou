@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/chose"
+        android:enabled="true"
+        android:icon="@drawable/baseline_playlist_add_check_24"
+        android:title="已选择" />
+    <item
+        android:id="@+id/chooseAll"
+        android:enabled="true"
+        android:icon="@drawable/baseline_checklist_rtl_24"
+        android:title="全选" />
+    <item
+        android:id="@+id/chooseEmpty"
+        android:enabled="true"
+        android:icon="@drawable/baseline_cached_24"
+        android:title="反选" />
+    <item
+        android:id="@+id/exit"
+        android:enabled="true"
+        android:icon="@drawable/outline_exit_to_app_24"
+        android:title="退出选择" />
+</menu>

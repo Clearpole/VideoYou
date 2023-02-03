@@ -13,6 +13,13 @@
 
     <style name="Theme.VideoYou.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/BottomNavigationView</item>
+    </style>
+    <style name="BottomNavigationView" parent="">
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
+    </style>
+
     <style name="cxw" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/cxw_theme_light_primary</item>
         <item name="colorOnPrimary">@color/cxw_theme_light_onPrimary</item>

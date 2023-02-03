@@ -2,6 +2,8 @@ package com.clearpole.videoyou.model
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.view.View
+import androidx.databinding.BaseObservable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.clearpole.videoyou.databinding.FolderListItemBinding
@@ -20,13 +22,14 @@ open class FolderModel(
     override var itemGroupPosition: Int = 0,
     override var itemExpand: Boolean = false,
     override var itemSublist: List<Any?>? = null,
+    var checked: Boolean = false,
+    var vis: Int = View.GONE,
     val title: String,
     val uri: Uri,
     val contentResolver: ContentResolver,
     val path: String
-) : ItemExpand, ItemBind {
+) : ItemExpand, ItemBind, BaseObservable() {
     val videoTitle get() = title
-
     override fun onBind(holder: BindingAdapter.BindingViewHolder) {
 
         val binding = holder.getBinding<FolderListItemBinding>()
@@ -41,4 +44,5 @@ open class FolderModel(
             this.cancel()
         }
     }
+
 }

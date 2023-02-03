@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.databinding.BaseObservable
+import com.clearpole.videoyou.objects.MainObjects
 import com.drake.brv.item.ItemExpand
 import com.drake.brv.item.ItemHover
 import com.drake.brv.item.ItemPosition
@@ -30,6 +31,7 @@ open class FolderTreeModel(
     override var itemSublist: List<Any?>?
         get() = jsonSublist
         set(value) {
+            @Suppress("UNCHECKED_CAST")
             jsonSublist = value as List<FolderModel>
         }
     var jCount = 0
@@ -46,6 +48,7 @@ open class FolderTreeModel(
                     )
                 )
                 jCount += 1
+                MainObjects.count = jCount
             }
         }
     }

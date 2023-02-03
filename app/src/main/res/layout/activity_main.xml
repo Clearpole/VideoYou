@@ -36,7 +36,7 @@
                 app:navigationIconTint="?android:attr/textColorPrimary" />
         </com.google.android.material.appbar.AppBarLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/main_navigation_root"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,8 +48,17 @@
                 android:layout_height="wrap_content"
                 app:itemBackground="@null"
                 app:itemRippleColor="@null"
-                app:menu="@menu/main_bottom_navigation_menu" />
-        </LinearLayout>
+                app:menu="@menu/main_navigation" />
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/main_check"
+                style="@style/Widget.App.BottomNavigationView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:labelVisibilityMode="labeled"
+                app:menu="@menu/main_choose" />
+        </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"

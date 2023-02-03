@@ -54,6 +54,7 @@ import com.drake.brv.utils.bindingAdapter
 import com.drake.brv.utils.linear
 import com.drake.brv.utils.setup
 import com.google.android.material.R.style.MaterialAlertDialog_Material3
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
@@ -68,6 +69,7 @@ import com.thegrizzlylabs.sardineandroid.Sardine
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -111,8 +113,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             }
 
             private fun topBar(
-                binding: ActivityMainBinding,
-                context: Context
+                binding: ActivityMainBinding, context: Context
             ) {
                 binding.mainToolbar.title = "播放列表"
                 binding.mainToolbar.setNavigationOnClickListener {
@@ -123,8 +124,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         R.id.menu_refreshMediaStore -> {
                             DatabaseStorage.clearData(context.contentResolver)
                             RefreshMediaStore.updateMedia(
-                                context,
-                                Environment.getExternalStorageDirectory().toString()
+                                context, Environment.getExternalStorageDirectory().toString()
                             )
                             ToastUtils.show(context.getString(R.string.onClickRefreshMedia))
                             true
@@ -139,9 +139,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         object Logic {
             @SuppressLint("UseCompatLoadingForDrawables", "SwitchIntDef")
             fun start(
-                binding: ActivityMainBinding,
-                activity: Activity,
-                context: Context
+                binding: ActivityMainBinding, activity: Activity, context: Context
             ) {
                 navigationDrawer(binding, context, activity)
                 bottomNavigation(binding)
@@ -155,11 +153,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         noticeView.text = notice
                         binding.mainNavigationDrawerView.getHeaderView(0)
                             .findViewById<LinearLayout>(R.id.notice).setOnClickListener {
-                                MaterialAlertDialogBuilder(context, MaterialAlertDialog_Material3)
-                                    .setTitle("公告")
-                                    .setMessage(notice)
-                                    .setNegativeButton("我知道了") { _, _ -> }
-                                    .show()
+                                MaterialAlertDialogBuilder(
+                                    context, MaterialAlertDialog_Material3
+                                ).setTitle("公告").setMessage(notice)
+                                    .setNegativeButton("我知道了") { _, _ -> }.show()
                             }
                     }
                 }
@@ -185,9 +182,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
             @SuppressLint("MissingInflatedId")
             private fun navigationDrawer(
-                binding: ActivityMainBinding,
-                context: Context,
-                activity: Activity
+                binding: ActivityMainBinding, context: Context, activity: Activity
             ) {
                 binding.mainNavigationDrawerView.getHeaderView(0)
                     .findViewById<ImageView>(R.id.header_back).setOnClickListener {
@@ -222,20 +217,15 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 val view = activity.layoutInflater.inflate(R.layout.material_dialog_edit_1, null)
                 view.findViewById<TextInputLayout>(R.id.edit_layout).hint = "输入视频直链"
                 MaterialAlertDialogBuilder(
-                    context,
-                    MaterialAlertDialog_Material3
-                )
-                    .setTitle("输入链接")
-                    .setView(view)
-                    .setNegativeButton("开看！") { _, _ ->
-                        VideoPlayObjects.type = "INTERNET"
-                        VideoPlayObjects.title =
-                            view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
-                        VideoPlayObjects.paths =
-                            view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
-                        startActivity(Intent(context, VideoPlayer::class.java))
-                    }
-                    .show()
+                    context, MaterialAlertDialog_Material3
+                ).setTitle("输入链接").setView(view).setNegativeButton("开看！") { _, _ ->
+                    VideoPlayObjects.type = "INTERNET"
+                    VideoPlayObjects.title =
+                        view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
+                    VideoPlayObjects.paths =
+                        view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
+                    startActivity(Intent(context, VideoPlayer::class.java))
+                }.show()
             }
 
             private fun webdav(activity: Activity, context: Context) {
@@ -252,64 +242,58 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     view.findViewById<TextInputLayout>(R.id.edit_3_layout_4).hint =
                         "WebDav 服务器密码"
                     MaterialAlertDialogBuilder(
-                        context,
-                        MaterialAlertDialog_Material3
-                    )
-                        .setTitle("WebDav")
-                        .setView(view)
-                        .setNegativeButton("登录") { _, _ ->
-                            val ip =
-                                view.findViewById<TextInputEditText>(R.id.edit_3_view_2).text.toString()
-                            val ipRoot =
-                                view.findViewById<TextInputEditText>(R.id.edit_3_view_1).text.toString()
-                            val username =
-                                view.findViewById<TextInputEditText>(R.id.edit_3_view_3).text.toString()
-                            val password =
-                                view.findViewById<TextInputEditText>(R.id.edit_3_view_4).text.toString()
-                            val webdavIp = if (ip.takeLast(1) == "/") {
-                                ip
-                            } else {
-                                "$ip/"
-                            }
-                            val webdavIpRoot = if (ipRoot.takeLast(1) == "/") {
-                                ipRoot
-                            } else {
-                                "$ipRoot/"
-                            }
-                            CoroutineScope(Dispatchers.IO).launch {
-                                val sardine: Sardine = OkHttpSardine()
+                        context, MaterialAlertDialog_Material3
+                    ).setTitle("WebDav").setView(view).setNegativeButton("登录") { _, _ ->
+                        val ip =
+                            view.findViewById<TextInputEditText>(R.id.edit_3_view_2).text.toString()
+                        val ipRoot =
+                            view.findViewById<TextInputEditText>(R.id.edit_3_view_1).text.toString()
+                        val username =
+                            view.findViewById<TextInputEditText>(R.id.edit_3_view_3).text.toString()
+                        val password =
+                            view.findViewById<TextInputEditText>(R.id.edit_3_view_4).text.toString()
+                        val webdavIp = if (ip.takeLast(1) == "/") {
+                            ip
+                        } else {
+                            "$ip/"
+                        }
+                        val webdavIpRoot = if (ipRoot.takeLast(1) == "/") {
+                            ipRoot
+                        } else {
+                            "$ipRoot/"
+                        }
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val sardine: Sardine = OkHttpSardine()
+                            try {
+                                if (!ip.contains("http")) {
+                                    ToastUtils.show("WebDav 服务器格式不正确！")
+                                    return@launch
+                                } else if (!ip.contains(ipRoot)) {
+                                    ToastUtils.show("根目录或Dav目录输入有误！")
+                                    return@launch
+                                }
+                                sardine.list(webdavIp)
+                            } catch (e: Exception) {
                                 try {
-                                    if (!ip.contains("http")) {
-                                        ToastUtils.show("WebDav 服务器格式不正确！")
-                                        return@launch
-                                    } else if (!ip.contains(ipRoot)) {
-                                        ToastUtils.show("根目录或Dav目录输入有误！")
-                                        return@launch
-                                    }
+                                    sardine.setCredentials(username, password)
                                     sardine.list(webdavIp)
+                                    ToastUtils.show("登录成功！")
+                                    kv.encode("isLogin", 1)
                                 } catch (e: Exception) {
-                                    try {
-                                        sardine.setCredentials(username, password)
-                                        sardine.list(webdavIp)
-                                        ToastUtils.show("登录成功！")
-                                        kv.encode("isLogin", 1)
-                                    } catch (e: Exception) {
-                                        ToastUtils.showLong("连接失败\n${e.message}")
-                                    }
+                                    ToastUtils.showLong("连接失败\n${e.message}")
                                 }
                             }
-                            kv.encode("WebDavUser", username)
-                            kv.encode("WebDavPassword", password)
-                            kv.encode("WebDavIp", webdavIp)
-                            kv.encode("WebDavIpRoot", webdavIpRoot)
                         }
-                        .setNeutralButton("登录帮助") { _, _ ->
-                            val uri =
-                                Uri.parse("https://clearpole.gitee.io/videoyou-website/docs/videoyou/%E4%BD%BF%E7%94%A8%E5%B8%AE%E5%8A%A9/WebDav%E6%8F%90%E7%A4%BA%E8%BF%9E%E6%8E%A5%E5%A4%B1%E8%B4%A5%EF%BC%9F")
-                            val intent = Intent(Intent.ACTION_VIEW, uri)
-                            startActivity(intent)
-                        }
-                        .show()
+                        kv.encode("WebDavUser", username)
+                        kv.encode("WebDavPassword", password)
+                        kv.encode("WebDavIp", webdavIp)
+                        kv.encode("WebDavIpRoot", webdavIpRoot)
+                    }.setNeutralButton("登录帮助") { _, _ ->
+                        val uri =
+                            Uri.parse("https://clearpole.gitee.io/videoyou-website/docs/videoyou/%E4%BD%BF%E7%94%A8%E5%B8%AE%E5%8A%A9/WebDav%E6%8F%90%E7%A4%BA%E8%BF%9E%E6%8E%A5%E5%A4%B1%E8%B4%A5%EF%BC%9F")
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        startActivity(intent)
+                    }.show()
                     view.findViewById<TextInputEditText>(R.id.edit_3_view_2)
                         .setText(kv.decodeString("WebDavIp"))
                     view.findViewById<TextInputEditText>(R.id.edit_3_view_3)
@@ -362,9 +346,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         object UI {
             fun start(
-                binding: ActivityMainBinding,
-                activity: Activity,
-                context: Context
+                binding: ActivityMainBinding, activity: Activity, context: Context
             ) {
                 bindingViews = pageViewer(binding, activity.layoutInflater, context, activity)
             }
@@ -399,17 +381,15 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         object Logic {
             fun start(
-                binding: ActivityMainBinding,
-                activity: Activity,
-                context: Context
+                binding: ActivityMainBinding, activity: Activity, context: Context
             ) {
                 BRV.modelId = BR.model
                 viewPagerListener(binding)
                 Playlist.addPlayList(bindingViews!!, activity, context)
                 Playlist.loadPlayList(bindingViews!!)
                 MediaStore.mediaStoreList(bindingViews!!, binding, context)
-                MediaStore.addPlayListFile(binding, bindingViews!!, context)
-                FolderList.folderList(bindingViews!!, context)
+                FolderList.addPlayListFile(binding, bindingViews!!, context)
+                FolderList.folderList(bindingViews!!, context, binding)
                 MediaStore.refreshList(bindingViews!!, context, binding)
                 FolderList.refreshList(bindingViews!!, context, binding)
                 Settings.settings(context, bindingViews!!)
@@ -417,11 +397,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
             object Settings {
                 fun settings(context: Context, bindingViews: ArrayList<View>) {
-                    bindingViews[3].findViewById<RelativeLayout>(R.id.intoAbout).setOnClickListener {
-                        val int = Intent(context,SettingActivity::class.java)
-                        int.putExtra("name","关于")
-                        startActivity(int)
-                    }
+                    bindingViews[3].findViewById<RelativeLayout>(R.id.intoAbout)
+                        .setOnClickListener {
+                            val int = Intent(context, SettingActivity::class.java)
+                            int.putExtra("name", "关于")
+                            startActivity(int)
+                        }
                     val rv = bindingViews[3].findViewById<RecyclerView>(R.id.listview)
                     rv.linear().setup {
                         addType<MainSettingModel> { R.layout.main_page_setting_item }
@@ -433,19 +414,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     return mutableListOf<Any>().apply {
                         add(
                             MainSettingModel(
-                                "通用", "个人爱好的定制选项",
-                                context.getDrawable(R.drawable.outline_explore_24)!!
+                                "通用",
+                                "个人爱好的定制选项",
+                                context.getDrawable(R.drawable.baseline_explore_24)!!
                             )
                         )
                         add(
                             MainSettingModel(
-                                "主题", "个人审美的定制选项",
-                                context.getDrawable(R.drawable.outline_auto_fix_high_24)!!
+                                "主题",
+                                "个人审美的定制选项",
+                                context.getDrawable(R.drawable.baseline_auto_fix_high_24)!!
                             )
                         )
                         add(
                             MainSettingModel(
-                                "手势", "个人习惯的定制选项",
+                                "手势",
+                                "个人习惯的定制选项",
                                 context.getDrawable(R.drawable.outline_gesture_24)!!
                             )
                         )
@@ -455,26 +439,18 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
             object Playlist {
                 fun addPlayList(
-                    bindingViews: ArrayList<View>,
-                    activity: Activity,
-                    context: Context
+                    bindingViews: ArrayList<View>, activity: Activity, context: Context
                 ) {
                     val rv = bindingViews[0].findViewById<RecyclerView>(R.id.listview)
                     val addActionButton =
                         bindingViews[0].findViewById<FloatingActionButton>(R.id.add_playlist)
                     addActionButton.setOnClickListener {
-                        ToastUtils.show("未全面开放，请耐心等待")
-                    }
-                    /*addActionButton.setOnClickListener {
                         val view =
                             activity.layoutInflater.inflate(R.layout.material_dialog_edit_1, null)
                         view.findViewById<TextInputLayout>(R.id.edit_layout).hint = "请输入列表名称"
                         MaterialAlertDialogBuilder(
-                            context,
-                            MaterialAlertDialog_Material3
-                        )
-                            .setTitle("添加播放列表")
-                            .setView(view)
+                            context, MaterialAlertDialog_Material3
+                        ).setTitle("添加播放列表").setView(view)
                             .setNegativeButton("确认新建") { _, _ ->
                                 CoroutineScope(Dispatchers.Main).launch {
                                     KeyboardUtils.hideSoftInput(activity.window)
@@ -488,9 +464,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                         if (!PlayList.readList()!!.contains(name)) {
                                             PlayList.addList(name)
                                             if (rv.size != 0) {
-                                                val json =
-                                                    PlayList.readListContent(name)
-                                                        ?.let { it1 -> JSONObject(it1) }
+                                                val json = PlayList.readListContent(name)
+                                                    ?.let { it1 -> JSONObject(it1) }
                                                 rv.addModels(
                                                     listOf(
                                                         PlayListNameModel(
@@ -517,7 +492,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         bindingViews[0].findViewById<MaterialTextView>(R.id.not_found_playlist).visibility =
                             View.GONE
                         loadPlayList(bindingViews)
-                    }*/
+                    }
                 }
 
                 fun loadPlayList(bindingViews: ArrayList<View>) {
@@ -539,9 +514,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                             val json = PlayList.readListContent(name)?.let { JSONObject(it) }
                             add(
                                 PlayListNameModel(
-                                    name,
-                                    json!!.getString("time"),
-                                    json.getInt("count").toString()
+                                    name, json!!.getString("time"), json.getInt("count").toString()
                                 )
                             )
                         }
@@ -552,13 +525,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             object MediaStore {
                 @SuppressLint("CutPasteId", "SetTextI18n")
                 fun mediaStoreList(
-                    bindingViews: ArrayList<View>,
-                    binding: ActivityMainBinding,
-                    context: Context
+                    bindingViews: ArrayList<View>, binding: ActivityMainBinding, context: Context
                 ) {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val models =
-                            getMediaStores(DatabaseStorage.readDataByData(), binding)
+                        val models = getMediaStores(DatabaseStorage.readDataByData(), binding)
                         launch(Dispatchers.Main) {
                             bindingViews[1].findViewById<RecyclerView>(R.id.listview).linear()
                                 .setup {
@@ -575,8 +545,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 }
 
                 private fun getMediaStores(
-                    kv: JSONArray,
-                    binding: ActivityMainBinding
+                    kv: JSONArray, binding: ActivityMainBinding
                 ): MutableList<Any> {
                     return mutableListOf<Any>().apply {
                         MainObjects.allSize = 0
@@ -597,43 +566,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     }
                 }
 
-                @SuppressLint("UseCompatLoadingForDrawables")
-                fun addPlayListFile(
-                    binding: ActivityMainBinding,
-                    bindingViews: ArrayList<View>,
-                    context: Context
-                ) {
-                    bindingViews[1].findViewById<FloatingActionButton>(R.id.add_playlist_file)
-                        .setOnClickListener {
-                            ToastUtils.show("未全面开放，请耐心等待")
-                        }
-                    /*bindingViews[1].findViewById<FloatingActionButton>(R.id.add_playlist_file)
-                        .setOnClickListener {
-                            if (!MainObjects.isChoose) {
-                                (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_check_24))
-                                binding.mainToolbar.title = "已选择 0 项"
-                                MainObjects.isChoose = true
-                            } else {
-                                (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_playlist_add_24))
-                                binding.mainToolbar.title = "媒体库"
-                                MainObjects.isChoose = false
-                                ToastUtils.show(MainObjects.chooseList.toString())
-                                mediaStoreList(bindingViews, binding, context)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    while (MainObjects.chooseList.keys().hasNext()) {
-                                        MainObjects.chooseList.remove(
-                                            MainObjects.chooseList.keys().next().toString()
-                                        )
-                                    }
-                                }
-                            }
-                        }*/
-                }
-
                 fun refreshList(
-                    bindingViews: ArrayList<View>,
-                    context: Context,
-                    binding: ActivityMainBinding
+                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding
                 ) {
                     bindingViews[1].findViewById<SwipeRefreshLayout>(R.id.refresh_view)
                         .setOnRefreshListener {
@@ -647,7 +581,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     //ToastUtils.show("软件遇到了意外的错误！\n或者是您的手机没有视频？")
                                 }
                                 launch(Dispatchers.Main) {
-                                    binding.mainToolbar.title = "媒体库"
+                                    binding.mainToolbar.title = "全部媒体"
                                     MainObjects.isChoose = false
                                     mediaStoreList(bindingViews, binding, context)
                                     bindingViews[1].findViewById<FloatingActionButton>(R.id.add_playlist_file)
@@ -668,7 +602,42 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             }
 
             object FolderList {
-                fun folderList(bindingViews: ArrayList<View>, context: Context) {
+                @SuppressLint("UseCompatLoadingForDrawables")
+                fun addPlayListFile(
+                    binding: ActivityMainBinding, bindingViews: ArrayList<View>, context: Context
+                ) {
+                    bindingViews[2].findViewById<FloatingActionButton>(R.id.add_playlist_file)
+                        .setOnClickListener {
+                            if (!MainObjects.isChoose) {
+                                (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_check_24))
+                                binding.mainCheck.visibility = View.VISIBLE
+                                MainObjects.isChoose = true
+                            } else {
+                                (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_playlist_add_24))
+                                MainObjects.isChoose = false
+                                binding.mainCheck.visibility = View.GONE
+                                ToastUtils.show(MainObjects.chooseList.toString())
+                                MediaStore.mediaStoreList(bindingViews, binding, context)
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    while (MainObjects.chooseList.keys().hasNext()) {
+                                        MainObjects.chooseList.remove(
+                                            MainObjects.chooseList.keys().next().toString()
+                                        )
+                                    }
+                                    withContext(Dispatchers.Main) {
+                                        MainObjects.cardList.forEach { view ->
+                                            (view[0] as MaterialCardView).isChecked = false
+                                            (view[1] as LinearLayout).visibility = View.GONE
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                }
+
+                fun folderList(
+                    bindingViews: ArrayList<View>, context: Context, bind: ActivityMainBinding
+                ) {
                     val rv = bindingViews[2].findViewById<RecyclerView>(R.id.listview)
                     val layoutManager = HoverGridLayoutManager(context, 2)
                     layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -695,20 +664,94 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 }
                             }
                         }
-                        R.id.folder_item.onFastClick {
-                            VideoPlayObjects.paths = getModel<FolderModel>(layoutPosition).path
-                            VideoPlayObjects.title = getModel<FolderModel>(layoutPosition).title
-                            VideoPlayObjects.type = "LOCAL"
-                            val intent = Intent(context, VideoPlayer::class.java)
-                            startActivity(intent)
+                        R.id.folder_item.onClick {
+                            if (MainObjects.isChoose) {
+                                var checked = getModel<FolderModel>().checked
+                                if (it == R.id.folder_item) checked = !checked
+                                setChecked(layoutPosition, checked)
+                            } else {
+                                VideoPlayObjects.paths = getModel<FolderModel>(layoutPosition).path
+                                VideoPlayObjects.title = getModel<FolderModel>(layoutPosition).title
+                                VideoPlayObjects.type = "LOCAL"
+                                val intent = Intent(context, VideoPlayer::class.java)
+                                startActivity(intent)
+                            }
+                        }
+                        onChecked { position, isChecked, _ ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if (!MainObjects.chooseState) {
+                                    MainObjects.chooseState = true
+                                    withContext(Dispatchers.Main) {
+                                        val badge = bind.mainCheck.getOrCreateBadge(R.id.chose)
+                                        badge.isVisible = true
+                                        try {
+                                            val model = getModel<FolderModel>(position)
+                                            model.checked = isChecked
+                                            if (isChecked) {
+                                                withContext(Dispatchers.IO) {
+                                                    MainObjects.chooseList.put(model.path, true)
+                                                }
+                                                model.vis = View.VISIBLE
+                                                badge.number = MainObjects.chooseList.length()
+                                            } else {
+                                                withContext(Dispatchers.IO) {
+                                                    MainObjects.chooseList.remove(model.path)
+                                                }
+                                                model.vis = View.GONE
+                                                badge.number = MainObjects.chooseList.length()
+                                            }
+                                            model.notifyChange()
+                                        } catch (e: Exception) {
+                                            return@withContext
+                                        }
+                                    }
+                                } else {
+                                    ToastUtils.show("你是在测试列表性能吗？")
+                                }
+                                withContext(Dispatchers.Main){
+                                    MainObjects.chooseState = false
+                                }
+                            }
                         }
                     }.models = getData(ReadMediaStore.getFolder(context.contentResolver), context)
+
+                    bind.mainCheck.setOnItemSelectedListener {
+                        when (it.itemId) {
+                            R.id.chooseAll -> {
+                                rv.bindingAdapter.checkedAll()
+                                true
+                            }
+
+                            R.id.chooseEmpty -> {
+                                rv.bindingAdapter.checkedReverse()
+                                true
+                            }
+
+                            R.id.exit -> {
+                                MainObjects.isChoose = false
+                                bind.mainCheck.visibility = View.GONE
+                                bindingViews[2].findViewById<FloatingActionButton>(R.id.add_playlist_file)
+                                    .setImageDrawable(context.getDrawable(R.drawable.baseline_playlist_add_24))
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    while (MainObjects.chooseList.keys().hasNext()) {
+                                        MainObjects.chooseList.remove(
+                                            MainObjects.chooseList.keys().next().toString()
+                                        )
+                                    }
+                                    rv.bindingAdapter.checkedAll(false)
+                                    this.cancel()
+                                }
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
                 }
 
                 @SuppressLint("ResourceType")
                 private fun getData(
-                    kv: ArrayList<String>,
-                    context: Context
+                    kv: ArrayList<String>, context: Context
                 ): MutableList<FolderTreeModel> {
                     return mutableListOf<FolderTreeModel>().apply {
                         for (index in 0 until kv.size) {
@@ -733,9 +776,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 }
 
                 fun refreshList(
-                    bindingViews: ArrayList<View>,
-                    context: Context,
-                    binding: ActivityMainBinding
+                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding
                 ) {
                     bindingViews[2].findViewById<SwipeRefreshLayout>(R.id.refresh_view)
                         .setOnRefreshListener {
@@ -749,16 +790,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     //ToastUtils.show("软件遇到了意外的错误！\n或者是您的手机没有视频？")
                                 }
                                 launch(Dispatchers.Main) {
-                                    folderList(bindingViews, context)
+                                    folderList(bindingViews, context, binding)
                                     binding.mainToolbar.title = "文件夹"
                                     MainObjects.isChoose = false
-                                    withContext(Dispatchers.IO) {
-                                        while (MainObjects.chooseList.keys().hasNext()) {
-                                            MainObjects.chooseList.remove(
-                                                MainObjects.chooseList.keys().next().toString()
-                                            )
-                                        }
-                                    }
+                                    MainObjects.chooseList = JSONObject()
                                     bindingViews[2].findViewById<SwipeRefreshLayout>(R.id.refresh_view).isRefreshing =
                                         false
                                 }
@@ -773,9 +808,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 binding.mainViewpager.addOnPageChangeListener(object :
                     androidx.viewpager.widget.ViewPager.OnPageChangeListener {
                     override fun onPageScrolled(
-                        position: Int,
-                        positionOffset: Float,
-                        positionOffsetPixels: Int
+                        position: Int, positionOffset: Float, positionOffsetPixels: Int
                     ) {
                     }
 
@@ -805,8 +838,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
                     override fun onPageScrollStateChanged(state: Int) {
                     }
-                }
-                )
+                })
             }
         }
     }
@@ -832,23 +864,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 tV1.text =
                     Html.fromHtml("<a href='https://clearpole.gitee.io/videoyou-website/docs/videoyou/%E8%BD%AF%E4%BB%B6/%E7%94%A8%E6%88%B7%E5%8D%8F%E8%AE%AE'>前往阅读用户协议</a>")
                 MaterialAlertDialogBuilder(
-                    context,
-                    MaterialAlertDialog_Material3
-                )
-                    .setTitle("用户协议与隐私政策")
-                    .setCancelable(false)
+                    context, MaterialAlertDialog_Material3
+                ).setTitle("用户协议与隐私政策").setCancelable(false)
                     .setMessage("您需要阅读并同意用户协议与隐私政策，否则将无法使用软件。")
-                    .setView(view)
-                    .setNegativeButton("不同意") { _, _ ->
+                    .setView(view).setNegativeButton("不同意") { _, _ ->
                         activity.finish()
-                    }
-                    .setPositiveButton("我已知晓并承诺遵循") { _, _ ->
-                        XXPermissions.with(context)
-                            .permission(permission)
+                    }.setPositiveButton("我已知晓并承诺遵循") { _, _ ->
+                        XXPermissions.with(context).permission(permission)
                             .request(object : OnPermissionCallback {
                                 override fun onGranted(
-                                    permissions: MutableList<String>,
-                                    allGranted: Boolean
+                                    permissions: MutableList<String>, allGranted: Boolean
                                 ) {
                                     if (!allGranted) {
                                         ToastUtils.show("获取部分权限成功，但部分权限未正常授予")
@@ -867,17 +892,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                         }
                                         launch(Dispatchers.Main) {
                                             ViewPager.Logic.start(
-                                                binding,
-                                                activity = activity,
-                                                context = context
+                                                binding, activity = activity, context = context
                                             )
                                         }
                                     }
                                 }
 
                                 override fun onDenied(
-                                    permissions: MutableList<String>,
-                                    doNotAskAgain: Boolean
+                                    permissions: MutableList<String>, doNotAskAgain: Boolean
                                 ) {
                                     if (doNotAskAgain) {
                                         ToastUtils.show("请授权读取视频文件权限")
@@ -888,8 +910,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     }
                                 }
                             })
-                    }
-                    .show()
+                    }.show()
             }
         }
     }

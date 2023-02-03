@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent">s
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_margin="25dp"
-        style="@style/Widget.Material3.CardView.Outlined">
+        style="@style/Widget.Material3.CardView.Elevated">
         <RelativeLayout
             android:id="@+id/intoAbout"
             android:layout_width="match_parent"

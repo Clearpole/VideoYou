@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.util.Rational
 import android.view.View
@@ -16,7 +15,6 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.blankj.utilcode.util.EncodeUtils.base64Encode
 import com.clearpole.videoyou.code.VideoPlayerGestureListener
@@ -43,9 +41,10 @@ import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
 
 
-    @Suppress("UNUSED_EXPRESSION")
-    class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
+@Suppress("UNUSED_EXPRESSION")
+class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
     private lateinit var player: ExoPlayer
+    private var firstLod = true
 
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("ResourceType", "LongLogTag", "MissingPermission")
@@ -165,11 +164,13 @@ import java.lang.Thread.sleep
                 val password = intent.getStringExtra("password")
                 val webPath = intent.getStringExtra("webPath")
 
-                val httpDataSourceFactory = DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
+                val httpDataSourceFactory =
+                    DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
                 val dataSourceFactory = DataSource.Factory {
                     val dataSource = httpDataSourceFactory.createDataSource()
-                    dataSource.setRequestProperty("Authorization",
-                        "Basic "+ base64Encode("$username:$password").decodeToString()
+                    dataSource.setRequestProperty(
+                        "Authorization",
+                        "Basic " + base64Encode("$username:$password").decodeToString()
                     )
                     dataSource
                 }
@@ -261,6 +262,13 @@ import java.lang.Thread.sleep
         }
     }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (firstLod) {
+            firstLod = false
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun finish() {
         if (SettingsItemsUntil.readSettingData("isDialogPlayer").toBoolean()) {
@@ -298,7 +306,7 @@ import java.lang.Thread.sleep
                 VideoPlayerObjects.isAutoFinish = true
                 super.finish()
             }
-        }else{
+        } else {
             player.release()
             VideoPlayerObjects.isFirstLod = true
             VideoPlayerObjects.isAutoFinish = true
