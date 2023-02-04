@@ -1,5 +1,8 @@
 package com.clearpole.videoyou.model
 
+import android.content.Intent
+import androidx.core.content.ContextCompat
+import com.clearpole.videoyou.PlayListActivity
 import com.clearpole.videoyou.databinding.PlayListNameItemBinding
 import com.drake.brv.BindingAdapter
 import com.drake.brv.item.ItemBind
@@ -14,9 +17,9 @@ data class PlayListNameModel(val title: String, val time: String, val count: Str
             append(count)
         }
         binding.playListFilesRoot.setOnClickListener {
-          /*  val int = Intent(holder.context, PlayListActivity::class.java)
+           val int = Intent(holder.context, PlayListActivity::class.java)
             int.putExtra("name", title)
-            ContextCompat.startActivity(int)*/
+            holder.context.startActivity(int)
         }
     }
 }

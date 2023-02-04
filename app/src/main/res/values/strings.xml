@@ -15,11 +15,15 @@
     <string name="more">更多</string>
     <string name="fileManager">文件管理</string>
     <string name="lockFile">隐私文件</string>
-    <string name="playerBackDialog">播放界面返回弹窗</string>
-    <string name="playerBackDialogInfo">在播放视频的时候退出显示弹窗</string>
+    <string name="playerBackDialog">播放时退出二次确认</string>
+    <string name="playerBackDialogInfo">在播放视频的时候退出会显示弹窗</string>
     <string name="darkMode">深色模式</string>
     <string name="AppTheme">应用主题</string>
     <string name="crash">崩溃了！\n我真的崩溃了！</string>
-    <string name="leavePlayerAutoPic">离开播放器打开小窗</string>
-    <string name="leavePlayerAutoPicInfo">在播放时离开播放界面自动打开小窗</string>
+    <string name="leavePlayerAutoPic">离开播放器自动打开画中画</string>
+    <string name="leavePlayerAutoPicInfo">此功能仅限安卓9以上使用</string>
+    <string name="keepScreenOn">播放界面常亮</string>
+    <string name="keepScreenOnInfo">播放界面屏幕永不自动熄灭</string>
+    <string name="playDoneAutoEdit">播放完毕自动退出</string>
+    <string name="playDoneAutoEditInfo">在播放完毕时自动退出</string>
 </resources>

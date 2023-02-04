@@ -37,7 +37,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>() {
     @SuppressLint("CutPasteId", "SetTextI18n")
     private fun setSearchList(key: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val models = getDataForSearch(key, DatabaseStorage.readDataByData())
+            val models = getDataForSearch(key, DatabaseStorage.readDataByData()!!)
             launch(Dispatchers.Main) {
                 binding.searchRv.linear().setup {
                     addType<SearchModel> { R.layout.search_item }

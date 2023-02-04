@@ -71,4 +71,72 @@
             android:layout_marginEnd="25dp"
             android:layout_alignParentEnd="true" />
     </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/isScreenNoBlack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="DuplicateIds">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_centerVertical="true">
+            <com.google.android.material.textview.MaterialTextView
+                android:textSize="17sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/keepScreenOn"
+                android:layout_marginStart="17dp"
+                android:layout_marginEnd="20dp" />
+            <com.google.android.material.textview.MaterialTextView
+                android:textSize="13sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/keepScreenOnInfo"
+                android:layout_marginStart="17dp" />
+        </LinearLayout>
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/screenOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="25dp"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/isAutoEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="DuplicateIds">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_centerVertical="true">
+            <com.google.android.material.textview.MaterialTextView
+                android:textSize="17sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/playDoneAutoEdit"
+                android:layout_marginStart="17dp"
+                android:layout_marginEnd="20dp" />
+            <com.google.android.material.textview.MaterialTextView
+                android:textSize="13sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/playDoneAutoEditInfo"
+                android:layout_marginStart="17dp" />
+        </LinearLayout>
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/autoEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="25dp"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
 </LinearLayout>

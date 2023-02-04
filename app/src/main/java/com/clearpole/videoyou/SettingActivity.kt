@@ -20,6 +20,7 @@ import com.drake.brv.utils.linear
 import com.drake.brv.utils.setup
 import com.google.android.material.R.style.MaterialAlertDialog_Material3
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.gyf.immersionbar.ImmersionBar
 
 
@@ -56,23 +57,17 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
         binding.settingAbout.root.visibility = View.VISIBLE
         binding.settingAbout.intoQq.setOnClickListener {
             MaterialAlertDialogBuilder(
-                this,
-                MaterialAlertDialog_Material3
-            )
-                .setTitle("加入QQ频道")
-                .setCancelable(false)
+                this, MaterialAlertDialog_Material3
+            ).setTitle("加入QQ频道").setCancelable(false)
                 .setMessage("加入频道可获取最新版本更新，是否访问外部链接以加入QQ频道？")
-                .setNegativeButton("取消") { _, _ -> }
-                .setPositiveButton("加入QQ频道") { _, _ ->
+                .setNegativeButton("取消") { _, _ -> }.setPositiveButton("加入QQ频道") { _, _ ->
                     val uri = Uri.parse("https://pd.qq.com/s/61vf6d5qi")
                     val intent = Intent(Intent.ACTION_VIEW, uri)
                     startActivity(intent)
-                }
-                .show()
+                }.show()
         }
         binding.settingAbout.intoWeb.setOnClickListener {
-            val uri =
-                Uri.parse("https://clearpole.gitee.io/videoyou-website/")
+            val uri = Uri.parse("https://clearpole.gitee.io/videoyou-website/")
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         }
@@ -81,37 +76,18 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
             Glide.with(this)
                 .load("https://gitee.com/clearpole/VideoYou-WebSite/raw/master/img/jz.png")
                 .into(view.findViewById(R.id.don))
-            MaterialAlertDialogBuilder(this, MaterialAlertDialog_Material3)
-                .setTitle("捐献")
+            MaterialAlertDialogBuilder(this, MaterialAlertDialog_Material3).setTitle("捐献")
                 .setMessage("捐赠并不会对你带来任何好处，但可以帮助开发者坚定维护软件下信心。感谢每一位投喂的人！")
-                .setView(view)
-                .setNegativeButton("确定") { _, _ -> }
-                .show()
+                .setView(view).setNegativeButton("确定") { _, _ -> }.show()
         }
     }
 
     private fun currency() {
         binding.settingCurrency.root.visibility = View.VISIBLE
-        binding.settingCurrency.sDBL.isChecked =
-            SettingsItemsUntil.readSettingData("isAutoPicture").toBoolean()
-        binding.settingCurrency.isAutoPicRoot.setOnClickListener {
-            val isTrue = SettingsItemsUntil.readSettingData("isAutoPicture")
-            binding.settingCurrency.sDBL.isChecked = !isTrue.toBoolean()
-            SettingsItemsUntil.writeSettingData(
-                "isAutoPicture",
-                isTrue.toBoolean().not().toString()
-            )
-        }
-        binding.settingCurrency.sDBV.isChecked =
-            SettingsItemsUntil.readSettingData("isDialogPlayer").toBoolean()
-        binding.settingCurrency.isDialogPlayerRoot.setOnClickListener {
-            val isTrue = SettingsItemsUntil.readSettingData("isDialogPlayer")
-            binding.settingCurrency.sDBV.isChecked = !isTrue.toBoolean()
-            SettingsItemsUntil.writeSettingData(
-                "isDialogPlayer",
-                isTrue.toBoolean().not().toString()
-            )
-        }
+        switchSet(binding.settingCurrency.screenOn, "isScreenOn")
+        switchSet(binding.settingCurrency.autoEdit, "isAutoExit")
+        switchSet(binding.settingCurrency.sDBL, "isAutoPicture")
+        switchSet(binding.settingCurrency.sDBV, "isDialogPlayer")
     }
 
     private fun theme() {
@@ -123,59 +99,50 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
         layoutManager.orientation = LinearLayoutManager.HORIZONTAL
         binding.settingTheme.themeListview.layoutManager = layoutManager
         val mode = SettingsItemsUntil.readSettingData("darkMode")?.toInt()!!
-        binding.settingTheme.settingThemeDarkMode.text =
-            when (mode) {
-                0 -> {
-                    "跟随系统"
-                }
-
-                1 -> {
-                    "始终开启"
-                }
-
-                2 -> {
-                    "始终关闭"
-                }
-
-                else -> {
-                    "错误"
-                }
+        binding.settingTheme.settingThemeDarkMode.text = when (mode) {
+            0 -> {
+                "跟随系统"
             }
+
+            1 -> {
+                "始终开启"
+            }
+
+            2 -> {
+                "始终关闭"
+            }
+
+            else -> {
+                "错误"
+            }
+        }
 
         binding.settingTheme.settingThemeDayNightMode.setOnClickListener {
             val choices = arrayOf<CharSequence>("跟随系统", "始终开启", "始终关闭")
-            MaterialAlertDialogBuilder(this)
-                .setTitle("深色模式")
-                .setSingleChoiceItems(
-                    choices,
-                    SettingsItemsUntil.readSettingData("darkMode")!!.toInt(),
-                    null
-                )
-                .setPositiveButton("确定") { dialog: DialogInterface, _: Int ->
-                    val checkedItemPosition: Int =
-                        (dialog as AlertDialog).listView.checkedItemPosition
-                    if (checkedItemPosition != AdapterView.INVALID_POSITION) {
-                        binding.settingTheme.settingThemeDarkMode.text =
-                            choices[checkedItemPosition]
-                        SettingsItemsUntil.writeSettingData(
-                            "darkMode",
-                            checkedItemPosition.toString()
-                        )
+            MaterialAlertDialogBuilder(this).setTitle("深色模式").setSingleChoiceItems(
+                choices, SettingsItemsUntil.readSettingData("darkMode")!!.toInt(), null
+            ).setPositiveButton("确定") { dialog: DialogInterface, _: Int ->
+                val checkedItemPosition: Int = (dialog as AlertDialog).listView.checkedItemPosition
+                if (checkedItemPosition != AdapterView.INVALID_POSITION) {
+                    binding.settingTheme.settingThemeDarkMode.text = choices[checkedItemPosition]
+                    SettingsItemsUntil.writeSettingData(
+                        "darkMode", checkedItemPosition.toString()
+                    )
+                }
+                when (checkedItemPosition) {
+                    0 -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                     }
-                    when (checkedItemPosition) {
-                        0 -> {
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                        }
 
-                        1 -> {
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        }
-
-                        else -> {
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        }
+                    1 -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                     }
-                }.show()
+
+                    else -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    }
+                }
+            }.show()
         }
     }
 
@@ -188,6 +155,17 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
             add(SettingThemeModel("晨夕雾", R.style.cxw))
             add(SettingThemeModel("深竹月", R.style.szy))
             add(SettingThemeModel("绣绯樱", R.style.xfy))
+        }
+    }
+
+    private fun switchSet(view: MaterialSwitch, setItemName: String) {
+        view.isChecked = SettingsItemsUntil.readSettingData(setItemName).toBoolean()
+        view.setOnClickListener {
+            val isTrue = SettingsItemsUntil.readSettingData(setItemName)
+            view.isChecked = !isTrue.toBoolean()
+            SettingsItemsUntil.writeSettingData(
+                setItemName, isTrue.toBoolean().not().toString()
+            )
         }
     }
 }

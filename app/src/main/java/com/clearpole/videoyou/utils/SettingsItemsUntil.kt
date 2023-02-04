@@ -3,21 +3,29 @@ package com.clearpole.videoyou.utils
 import com.tencent.mmkv.MMKV
 
 class SettingsItemsUntil {
-    companion object{
+    companion object {
         private val kV = MMKV.mmkvWithID("Setting")!!
-        fun writeSettingData(key: String,value: String){
-            kV.encode(key,value)
+        private val settings = arrayListOf(
+            arrayListOf("darkMode", "0"),
+            arrayListOf("isAutoPicture", "false"),
+            arrayListOf("isDialogPlayer", "true"),
+            arrayListOf("isScreenOn", "true"),
+            arrayListOf("isAutoExit", "false")
+        )
+
+        fun writeSettingData(key: String, value: String) {
+            kV.encode(key, value)
         }
+
         fun readSettingData(key: String): String? {
             return kV.decodeString(key)
         }
-        fun initializationItems(){
-            if (kV.decodeInt("first")==1){
-            }else{
-                kV.encode("darkMode","0")
-                kV.encode("isAutoPicture","false")
-                kV.encode("first",1)
-                kV.encode("isDialogPlayer",true)
+
+        fun fixItems() {
+            for (index in 0 until settings.size) {
+                if (kV.decodeString(settings[index][0]).isNullOrEmpty()) {
+                    kV.encode(settings[index][0], settings[index][1])
+                }
             }
         }
     }

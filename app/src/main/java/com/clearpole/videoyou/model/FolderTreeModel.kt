@@ -14,7 +14,7 @@ import org.json.JSONObject
 
 open class FolderTreeModel(
     private val contentResolver: ContentResolver,
-    val path: String,
+    val path: String?,
     private val json: JSONArray,
     private val openImg: Drawable,
     private val closeImg: Drawable
@@ -34,11 +34,16 @@ open class FolderTreeModel(
             @Suppress("UNCHECKED_CAST")
             jsonSublist = value as List<FolderModel>
         }
-    var jCount = 0
+    private var jCount = 0
     private var jsonSublist: List<FolderModel> = mutableListOf<FolderModel>().apply {
         for (index in 0 until json.length()) {
             val objects = JSONObject(json.getString(index))
-            if (objects.getString("folder") == title) {
+            var folder = "根目录"
+            try {
+                folder = objects.getString("folder")
+            } catch (_: Exception) {
+            }
+            if (folder == title) {
                 add(
                     FolderModel(
                         title = objects.getString("title"),

@@ -8,5 +8,6 @@ class VideoPlayerObjects {
         var videoWidth : Int = 0
         var videoHeight : Int = 0
         var isAutoFinish : Boolean = false
+        var isIntoHome : Boolean = false
     }
 }

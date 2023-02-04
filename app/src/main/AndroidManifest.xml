@@ -25,6 +25,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".PlayListActivity"
+            android:exported="false" />
+        <activity
             android:name=".ErrorCrashActivity"
             android:exported="false">
             <intent-filter>
@@ -49,9 +52,8 @@
             android:supportsPictureInPicture="true" />
         <activity
             android:name=".MainActivity"
-            android:exported="true"
             android:configChanges="uiMode"
-            android:launchMode="singleTask">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

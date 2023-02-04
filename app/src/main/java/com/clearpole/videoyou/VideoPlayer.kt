@@ -52,6 +52,9 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
         super.onCreate(savedInstanceState)
         val binding: ActivityVideoPlayerBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_video_player)
+        if (SettingsItemsUntil.readSettingData("isScreenOn").toBoolean()) {
+            binding.videoView.keepScreenOn = true
+        }
         binding.lifecycleOwner = this
         binding.videoModel = VideoModel()
         ImmersionBar.with(this).transparentBar().hideBar(BarHide.FLAG_HIDE_BAR).init()
@@ -66,8 +69,7 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
         binding.videoPlayerBottomBarRoot.videoPlayerPauseRoot.setOnClickListener {
             if (!binding.videoView.player!!.isPlaying) {
                 val draw = Drawable.createFromXml(
-                    resources,
-                    resources.getXml(R.drawable.baseline_pause_24)
+                    resources, resources.getXml(R.drawable.baseline_pause_24)
                 )
                 binding.videoView.player?.play()
                 binding.videoModel?.pauseImg = draw
@@ -76,8 +78,7 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
             } else {
                 binding.videoView.player?.pause()
                 val draw = Drawable.createFromXml(
-                    resources,
-                    resources.getXml(R.drawable.baseline_play_arrow_24)
+                    resources, resources.getXml(R.drawable.baseline_play_arrow_24)
                 )
                 binding.videoPlayerAssemblyRoot.isPlayPauseRoot.visibility = View.VISIBLE
                 binding.videoPlayerAssemblyRoot.isPlayPause.setImageDrawable(draw)
@@ -100,8 +101,7 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 VideoPlayerObjects.isInFullScreen = false
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 binding.videoModel?.screenImg = Drawable.createFromXml(
-                    resources,
-                    resources.getXml(R.drawable.baseline_fullscreen_24)
+                    resources, resources.getXml(R.drawable.baseline_fullscreen_24)
                 )
                 val param = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -119,8 +119,7 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 // 设置播放器全屏
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 binding.videoModel?.screenImg = Drawable.createFromXml(
-                    resources,
-                    resources.getXml(R.drawable.baseline_fullscreen_exit_24)
+                    resources, resources.getXml(R.drawable.baseline_fullscreen_exit_24)
                 )
                 val param = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -175,8 +174,8 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                     dataSource
                 }
                 player = ExoPlayer.Builder(this)
-                    .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-                    .build().apply {
+                    .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory)).build()
+                    .apply {
                         setMediaItem(MediaItem.fromUri(webPath.toString()))
                         prepare()
                     }
@@ -189,6 +188,9 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
         } finally {
             player.prepare()
             var isFirst = true
+            if (SettingsItemsUntil.readSettingData("isAutoExit").toBoolean().not()) {
+                player.repeatMode = Player.REPEAT_MODE_ALL
+            }
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     super.onPlaybackStateChanged(playbackState)
@@ -201,9 +203,7 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                             if (isFirst) {
                                 player.playWhenReady = true
                                 VideoPlayerGestureListener.gestureListener(
-                                    this@VideoPlayer,
-                                    binding,
-                                    resources
+                                    this@VideoPlayer, binding, resources
                                 )
                                 // 开启手势监听
                                 binding.videoModel?.allProgressString =
@@ -211,15 +211,12 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                                 // 全部时长
                                 binding.videoModel?.allProgressFloat = player.duration.toFloat()
                                 // 全部时长
-                                binding.videoModel?.pauseImg =
-                                    Drawable.createFromXml(
-                                        resources,
-                                        resources.getXml(R.drawable.baseline_pause_24)
-                                    )
+                                binding.videoModel?.pauseImg = Drawable.createFromXml(
+                                    resources, resources.getXml(R.drawable.baseline_pause_24)
+                                )
                                 // 设置pause icon
                                 binding.videoModel?.screenImg = Drawable.createFromXml(
-                                    resources,
-                                    resources.getXml(R.drawable.baseline_fullscreen_24)
+                                    resources, resources.getXml(R.drawable.baseline_fullscreen_24)
                                 )
                                 val allProgress = player.duration
                                 // 设置screen control icon
@@ -248,9 +245,10 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                         }
 
                         Player.STATE_ENDED -> {
-                            VideoPlayerObjects.isAutoFinish = true
-                            player.release()
-                            finish()
+                            if (SettingsItemsUntil.readSettingData("isAutoExit").toBoolean()) {
+                                VideoPlayerObjects.isAutoFinish = true
+                                finish()
+                            }
                         }
 
                         Player.STATE_IDLE -> {
@@ -276,32 +274,25 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 MaterialAlertDialogBuilder(
                     this,
                     com.google.android.material.R.style.MaterialAlertDialog_Material3_Title_Text_CenterStacked
-                )
-                    .setTitle("退出播放")
-                    .setMessage("您确定要退出播放？还是进入小窗？")
-                    .setPositiveButton("取消") { _, _ -> }
-                    .setNegativeButton("进入小窗") { _, _ ->
+                ).setTitle("退出播放").setMessage("您确定要退出播放？还是进入小窗？")
+                    .setPositiveButton("取消") { _, _ -> }.setNegativeButton("进入小窗") { _, _ ->
                         Log.w("小窗宽度", VideoPlayerObjects.videoWidth.toString())
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             val builder = PictureInPictureParams.Builder()
-                            val rational =
-                                Rational(
-                                    VideoPlayerObjects.videoWidth,
-                                    VideoPlayerObjects.videoHeight
-                                )
+                            val rational = Rational(
+                                VideoPlayerObjects.videoWidth, VideoPlayerObjects.videoHeight
+                            )
                             builder.setAspectRatio(rational)
                             this.enterPictureInPictureMode(builder.build())
                         } else {
                             ToastUtils.show("您的系统版本不支持画中画")
                         }
-                    }
-                    .setNeutralButton("退出播放") { _, _ ->
+                    }.setNeutralButton("退出播放") { _, _ ->
                         player.release()
                         VideoPlayerObjects.isFirstLod = true
                         VideoPlayerObjects.isAutoFinish = true
                         super.finish()
-                    }
-                    .show()
+                    }.show()
             } else {
                 VideoPlayerObjects.isAutoFinish = true
                 super.finish()
@@ -324,14 +315,24 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 builder.setAspectRatio(rational)
                 this.enterPictureInPictureMode(builder.build())
             }
+        } else {
+            VideoPlayerObjects.isIntoHome = true
+            player.pause()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (VideoPlayerObjects.isIntoHome) {
+            player.play()
+            VideoPlayerObjects.isIntoHome = false
         }
     }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onPictureInPictureModeChanged(
-        isInPictureInPictureMode: Boolean,
-        newConfig: Configuration
+        isInPictureInPictureMode: Boolean, newConfig: Configuration
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {

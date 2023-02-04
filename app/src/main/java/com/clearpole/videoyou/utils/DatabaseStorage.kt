@@ -8,27 +8,31 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 
 class DatabaseStorage {
-    companion object{
+    companion object {
         private val kv = MMKV.mmkvWithID("MediaStore")
-        fun writeDataToData(list : JSONArray): Boolean {
+        fun writeDataToData(list: JSONArray): Boolean {
             var isSuccess = false
             CoroutineScope(Dispatchers.IO).launch {
-                for (index in 0 until list.length()){
-                    isSuccess = kv.encode(index.toString(),list[index].toString())
+                for (index in 0 until list.length()) {
+                    isSuccess = kv.encode(index.toString(), list[index].toString())
                 }
             }
             return isSuccess
         }
-        fun readDataByData(): JSONArray {
+
+        fun readDataByData(): JSONArray? = try {
             val kV = kv.allKeys()
             val array = JSONArray()
-            for (index in kV!!.indices){
+            for (index in kV!!.indices) {
                 val jsonObject = kv.decodeString(kV[index])
                 array.put(jsonObject)
             }
-            return array
+            array
+        } catch (e: Exception) {
+            null
         }
-        fun clearData(contentResolver: ContentResolver){
+
+        fun clearData(contentResolver: ContentResolver) {
             kv.clear()
             writeDataToData(ReadMediaStore.start(contentResolver))
         }

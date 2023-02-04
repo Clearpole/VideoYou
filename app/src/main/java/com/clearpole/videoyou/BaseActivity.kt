@@ -74,8 +74,8 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
         } catch (e: Exception) {
         }
         binding = ViewBindingUtil.inflateWithGeneric(this, layoutInflater)
+        SettingsItemsUntil.fixItems()
         setContentView(binding.root)
-        CrashConfig.Builder.create()
-            .errorActivity(ErrorCrashActivity::class.java)
+        CrashConfig.Builder.create().errorActivity(ErrorCrashActivity::class.java)
     }
 }
