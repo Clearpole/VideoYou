@@ -86,6 +86,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         Main.UI.start(binding, context = this, resources = resources, activity = this)
         ViewPager.UI.start(binding, activity = this, context = this)
         Main.Logic.start(binding, activity = this, context = this)
+        DatabaseStorage.clearData(this.contentResolver)
+        RefreshMediaStore.updateMedia(
+            this, Environment.getExternalStorageDirectory().toString()
+        )
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -387,6 +391,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 viewPagerListener(binding)
                 Playlist.addPlayList(bindingViews!!, activity, context)
                 Playlist.loadPlayList(bindingViews!!)
+                Playlist.refreshList(bindingViews!!,context,binding)
                 MediaStore.mediaStoreList(bindingViews!!, binding)
                 FolderList.addPlayListFile(binding, bindingViews!!, context)
                 MediaStore.refreshList(bindingViews!!, context, binding)
@@ -524,6 +529,29 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         }
                     }
                 }
+
+                @SuppressLint("UseCompatLoadingForDrawables")
+                fun refreshList(
+                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding
+                ) {
+                    bindingViews[0].findViewById<SwipeRefreshLayout>(R.id.refresh_view)
+                        .setOnRefreshListener {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if (!DatabaseStorage.writeDataToData(
+                                        ReadMediaStore.start(
+                                            context.contentResolver
+                                        )
+                                    )
+                                ) {
+                                }
+                                withContext(Dispatchers.Main) {
+                                    loadPlayList(bindingViews)
+                                    bindingViews[0].findViewById<SwipeRefreshLayout>(R.id.refresh_view).isRefreshing =
+                                        false
+                                }
+                            }
+                        }
+                }
             }
 
             object MediaStore {
@@ -603,9 +631,17 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     bindingViews[2].findViewById<FloatingActionButton>(R.id.add_playlist_file)
                         .setOnClickListener {
                             if (!MainObjects.isChoose) {
-                                (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_check_24))
-                                binding.mainCheck.visibility = View.VISIBLE
-                                MainObjects.isChoose = true
+                                if (PlayList.readList().isNotEmpty()) {
+                                    (it as FloatingActionButton).setImageDrawable(
+                                        context.getDrawable(
+                                            R.drawable.baseline_check_24
+                                        )
+                                    )
+                                    binding.mainCheck.visibility = View.VISIBLE
+                                    MainObjects.isChoose = true
+                                }else{
+                                    ToastUtils.show("您还没有新建任何播放列表")
+                                }
                             } else {
                                 MainObjects.isChoose = false
                                 (it as FloatingActionButton).setImageDrawable(context.getDrawable(R.drawable.baseline_playlist_add_24))
@@ -616,15 +652,27 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     .setSingleChoiceItems(
                                         playList.toTypedArray(), 0, null
                                     ).setNegativeButton("确定") { dialog, _ ->
-                                        val name =
-                                            playList[(dialog as AlertDialog).listView.checkedItemPosition]
-                                        PlayList.addPlayListContent(name, MainObjects.chooseList)
-                                        ToastUtils.showShort("添加成功")
-                                        val rv =
-                                            bindingViews[2].findViewById<RecyclerView>(R.id.listview)
-                                        rv.bindingAdapter.checkedAll(false)
-                                        binding.mainCheck.visibility = View.GONE
-                                        MainObjects.chooseList.clear()
+                                        if (MainObjects.chooseList.size==0) {
+                                            ToastUtils.show("您还没有选择任何视频")
+                                            val rv =
+                                                bindingViews[2].findViewById<RecyclerView>(R.id.listview)
+                                            rv.bindingAdapter.checkedAll(false)
+                                            binding.mainCheck.visibility = View.GONE
+                                            MainObjects.chooseList.clear()
+                                        }else {
+                                            val name =
+                                                playList[(dialog as AlertDialog).listView.checkedItemPosition]
+                                            PlayList.addPlayListContent(
+                                                name,
+                                                MainObjects.chooseList
+                                            )
+                                            ToastUtils.showShort("添加成功")
+                                            val rv =
+                                                bindingViews[2].findViewById<RecyclerView>(R.id.listview)
+                                            rv.bindingAdapter.checkedAll(false)
+                                            binding.mainCheck.visibility = View.GONE
+                                            MainObjects.chooseList.clear()
+                                        }
                                     }.setNeutralButton("取消") { _, _ ->
                                         val rv =
                                             bindingViews[2].findViewById<RecyclerView>(R.id.listview)
@@ -683,7 +731,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
                             val badge = bind.mainCheck.getOrCreateBadge(R.id.chose)
                             badge.isVisible = true
-                            try {
                                 val model = getModel<FolderModel>(position)
                                 model.checked = isChecked
                                 if (isChecked) {
@@ -698,12 +745,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     badge.number = MainObjects.chooseList.size
                                 }
                                 model.notifyChange()
-                            } catch (_: Exception) {
-                            }
                         }
 
                     }.models = getData(ReadMediaStore.getFolder(context.contentResolver), context)
-
+                    rv.bindingAdapter.setCheckableType(R.layout.folder_list_item)
                     bind.mainCheck.setOnItemSelectedListener {
                         when (it.itemId) {
                             R.id.chooseAll -> {

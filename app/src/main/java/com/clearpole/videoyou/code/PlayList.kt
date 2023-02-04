@@ -2,7 +2,6 @@ package com.clearpole.videoyou.code
 
 import android.annotation.SuppressLint
 import com.blankj.utilcode.util.TimeUtils
-import com.google.android.exoplayer2.util.Log
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,9 +42,9 @@ class PlayList {
             return mainKv.decodeString(name)
         }
 
-        fun removeList(name: String): Boolean {
-            // 返回是否删除成功
-            return false
+        fun removeList(name: String) {
+            mainKv.remove(name)
+            nextKv.remove(name)
         }
 
         fun addPlayListContent(name: String, list: ArrayList<String>) {

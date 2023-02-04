@@ -157,6 +157,21 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                         player.addMediaItem(MediaItem.fromUri(Uri.parse(VideoPlayObjects.paths)))
                         // 如果是网络就载入网络视频路径
                     }
+
+                    "LIST" -> {
+                        try {
+                            val list = VideoPlayObjects.list
+                            val keys = list.keys()
+                            while (keys.hasNext()) {
+                                val key = keys.next().toString()
+                                val uri = list.getString(key)
+                                player.addMediaItem(MediaItem.fromUri(uri))
+                            }
+                            player.seekToDefaultPosition(VideoPlayerObjects.newItem)
+                        } catch (_: Exception) {
+
+                        }
+                    }
                 }
             } else {
                 val username = intent.getStringExtra("username")
@@ -176,7 +191,11 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 player = ExoPlayer.Builder(this)
                     .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory)).build()
                     .apply {
-                        setMediaItem(MediaItem.fromUri(webPath.toString()))
+                        if (VideoPlayObjects.type == "LIST") {
+
+                        } else {
+                            addMediaItem(MediaItem.fromUri(webPath.toString()))
+                        }
                         prepare()
                     }
                 binding.videoView.player = player
@@ -192,8 +211,18 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 player.repeatMode = Player.REPEAT_MODE_ALL
             }
             player.addListener(object : Player.Listener {
+                @SuppressLint("SwitchIntDef")
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    super.onMediaItemTransition(mediaItem, reason)
+                    binding.videoModel?.allProgressString =
+                        timeParse(player.duration).toString()
+                    binding.videoModel?.nowProgressLong = 0
+                    binding.videoModel?.allProgressFloat = player.duration.toFloat()
+                }
+
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     super.onPlaybackStateChanged(playbackState)
+
                     when (playbackState) {
                         Player.STATE_READY -> {
                             if (VideoPlayerObjects.videoWidth == 0 || VideoPlayerObjects.videoHeight != player.videoSize.height) {
@@ -252,7 +281,7 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                         }
 
                         Player.STATE_IDLE -> {
-
+                            ToastUtils.show("播放出错")
                         }
                     }
                 }

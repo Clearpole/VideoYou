@@ -26,4 +26,5 @@
     <string name="keepScreenOnInfo">播放界面屏幕永不自动熄灭</string>
     <string name="playDoneAutoEdit">播放完毕自动退出</string>
     <string name="playDoneAutoEditInfo">在播放完毕时自动退出</string>
+    <string name="removePlayList">删除播放列表</string>
 </resources>
