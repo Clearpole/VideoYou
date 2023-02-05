@@ -10,5 +10,6 @@ class VideoPlayerObjects {
         var isAutoFinish : Boolean = false
         var isIntoHome : Boolean = false
         var newItem : Int = 0
+        var duration : Long = 0
     }
 }

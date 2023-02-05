@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="videoModel"
             type="com.clearpole.videoyou.model.VideoModel" />
@@ -13,94 +14,72 @@
         android:id="@+id/video_player_bottomBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#CC000000"
+        android:background="@drawable/player_bottom_background"
         android:orientation="vertical"
         android:visibility="gone">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="bottom">
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/video_player_video_slider_now_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="25dp"
-                    android:text="@{String.valueOf(videoModel.nowProgressString)}"
-                    android:textColor="#ffffff" />
-
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/video_player_video_slider"
-                    tools:ignore="SpeakableTextPresentCheck"
-                    android:value="@{videoModel.nowProgressLong}"
-                    android:valueTo="@{videoModel.allProgressFloat}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_toStartOf="@id/video_player_video_slider_all_text"
-                    android:layout_toEndOf="@id/video_player_video_slider_now_text" />
-
-                <TextView
-                    android:id="@+id/video_player_video_slider_all_text"
-                    tools:ignore="NotSibling"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="25dp"
-                    android:text="@{String.valueOf(videoModel.allProgressString)}"
-                    android:textColor="#ffffff" />
-            </RelativeLayout>
-        </LinearLayout>
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-            <LinearLayout
-                android:id="@+id/video_player_pause_root"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/video_player_lest"
+                android:layout_width="55dp"
+                android:paddingStart="15dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/baseline_skip_previous_24"
+                app:tint="#ffffff" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/video_player_video_slider"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentLeft="true">
-                <ImageView
-                    android:id="@+id/video_player_pause"
-                    android:layout_marginLeft="25dp"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@{videoModel.pauseImg}"
-                    app:tint="#ffffff" />
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/video_player_picture_root"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_toLeftOf="@id/video_player_screen_root"
-                android:layout_marginTop="4dp">
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginRight="15dp"
-                    android:layout_marginLeft="15dp"
-                    android:src="@drawable/baseline_picture_in_picture_24"
-                    app:tint="#ffffff" />
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/buttons"
+                android:layout_toEndOf="@id/video_player_lest"
+                android:contentDescription="@string/UtilOptions"
+                android:valueFrom="-0.9f"
+                android:value="@{videoModel.nowProgressLong,default=0}"
+                android:valueTo="@{videoModel.allProgressFloat,default=999}" />
 
             <LinearLayout
-                android:id="@+id/video_player_screen_root"
+                android:id="@+id/buttons"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentRight="true">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true">
+
+                <ImageView
+                    android:id="@+id/video_player_pause"
+                    android:layout_width="40dp"
+                    android:layout_height="30dp"
+                    android:src="@{videoModel.pauseImg}"
+                    app:tint="#ffffff"
+                    android:visibility="gone"/>
+
+                <ImageView
+                    android:id="@+id/video_player_next"
+                    android:layout_width="40dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/baseline_skip_next_24"
+                    app:tint="#ffffff" />
+
+                <ImageView
+                    android:id="@+id/video_player_pic"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:padding="3dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:src="@drawable/baseline_picture_in_picture_24"
+                    app:tint="#ffffff" />
 
                 <ImageView
                     android:id="@+id/video_player_screen"
-                    android:layout_width="30dp"
+                    android:layout_width="40dp"
                     android:layout_height="30dp"
-                    android:layout_marginRight="25dp"
+                    android:layout_marginEnd="15dp"
                     android:src="@{videoModel.screenImg}"
                     app:tint="#ffffff" />
             </LinearLayout>

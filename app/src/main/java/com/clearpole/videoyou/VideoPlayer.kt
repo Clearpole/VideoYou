@@ -2,9 +2,11 @@ package com.clearpole.videoyou
 
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
+import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,14 +17,17 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import androidx.databinding.DataBindingUtil
 import com.blankj.utilcode.util.EncodeUtils.base64Encode
+import com.clearpole.videoyou.VideoPlayer.VideoType.LOCAL
+import com.clearpole.videoyou.VideoPlayer.VideoType.STREAM
+import com.clearpole.videoyou.VideoPlayer.VideoType.WEBDAV
 import com.clearpole.videoyou.code.VideoPlayerGestureListener
 import com.clearpole.videoyou.databinding.ActivityVideoPlayerBinding
 import com.clearpole.videoyou.model.VideoModel
 import com.clearpole.videoyou.objects.VideoPlayObjects
 import com.clearpole.videoyou.objects.VideoPlayerObjects
 import com.clearpole.videoyou.utils.SettingsItemsUntil
+import com.clearpole.videoyou.utils.SubStringX.Companion.subStringX
 import com.clearpole.videoyou.utils.TimeParse.Companion.timeParse
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
@@ -30,15 +35,18 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.material.R.style.MaterialAlertDialog_Material3
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gyf.immersionbar.BarHide
 import com.gyf.immersionbar.ImmersionBar
 import com.hjq.toast.ToastUtils
+import com.tencent.mmkv.MMKV
+import com.thegrizzlylabs.sardineandroid.DavResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.Thread.sleep
 
 
 @Suppress("UNUSED_EXPRESSION")
@@ -46,27 +54,194 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
     private lateinit var player: ExoPlayer
     private var firstLod = true
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("ResourceType", "LongLogTag", "MissingPermission")
+    object VideoType {
+        const val LOCAL = "LOCAL"
+        const val STREAM = "STREAM"
+        const val WEBDAV = "WEBDAV"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding: ActivityVideoPlayerBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_video_player)
+        /**
+         * binding相关操作
+         */
         if (SettingsItemsUntil.readSettingData("isScreenOn").toBoolean()) {
             binding.videoView.keepScreenOn = true
         }
         binding.lifecycleOwner = this
         binding.videoModel = VideoModel()
+
+        /**
+         * 相关UI操作
+         */
+
+        uiStart()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (firstLod) {
+            /**
+             * 播放器组件
+             */
+            try {
+                player = ExoPlayer.Builder(this).build()
+                val list = VideoPlayObjects.list
+                when (VideoPlayObjects.type) {
+                    LOCAL -> {
+                        list.forEachIndexed { _, s ->
+                            player.addMediaItem(MediaItem.fromUri(s.toString()))
+                        }
+                    }
+
+                    STREAM -> {
+                        list.forEachIndexed { _, s ->
+                            player.addMediaItem(MediaItem.fromUri(Uri.parse(s.toString())))
+                        }
+                    }
+
+                    WEBDAV -> {
+                        val username = intent.getStringExtra("username")
+                        val password = intent.getStringExtra("password")
+
+                        val httpDataSourceFactory =
+                            DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
+                        val dataSourceFactory = DataSource.Factory {
+                            val dataSource = httpDataSourceFactory.createDataSource()
+                            dataSource.setRequestProperty(
+                                "Authorization",
+                                "Basic " + base64Encode("$username:$password").decodeToString()
+                            )
+                            dataSource
+                        }
+                        player = ExoPlayer.Builder(this)
+                            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory)).build()
+                            .apply {
+                                val kv = MMKV.mmkvWithID("WebDav")
+                                VideoPlayObjects.list.forEachIndexed { _, davResource ->
+                                    val uri =
+                                        kv.decodeString("WebDavIpRoot") + (davResource as DavResource).path.subStringX(
+                                            "/",
+                                            null
+                                        )
+                                    addMediaItem(MediaItem.fromUri(uri))
+                                }
+                            }
+
+                    }
+                }
+                binding.videoView.player = player
+                player.seekToDefaultPosition(VideoPlayerObjects.newItem)
+            } catch (e: Exception) {
+                ToastUtils.show(e.message)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    finish()
+                }
+            } finally {
+                player.prepare()
+                if (SettingsItemsUntil.readSettingData("isAutoExit").toBoolean().not()) {
+                    player.repeatMode = Player.REPEAT_MODE_ALL
+                }
+                var isFirst = true
+                player.addListener(object : Player.Listener {
+                    @SuppressLint("SwitchIntDef")
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        super.onMediaItemTransition(mediaItem, reason)
+                        /**
+                         * 切换视频
+                         */
+                    }
+
+                    @SuppressLint("ResourceType")
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        super.onPlaybackStateChanged(playbackState)
+                        when (playbackState) {
+                            Player.STATE_READY -> {
+                                if (VideoPlayerObjects.videoWidth == 0 || VideoPlayerObjects.videoHeight != player.videoSize.height) {
+                                    VideoPlayerObjects.videoHeight = player.videoSize.height
+                                    VideoPlayerObjects.videoWidth = player.videoSize.width
+                                }
+                                binding.videoPlayerTopBarRoot.videoPlayerVideoSliderAllText.text =
+                                    timeParse(player.duration).toString()
+                                binding.videoPlayerBottomBarRoot.videoPlayerVideoSlider.valueTo =
+                                    player.duration.toFloat()
+                                val uri = VideoPlayObjects.list[player.currentMediaItemIndex].toString()
+                                val title =
+                                    uri.substring(uri.lastIndexOf("/") + 1, uri.lastIndexOf("."))
+                                binding.videoPlayerTopBarRoot.title.text = title
+                                if (isFirst) {
+                                    player.playWhenReady = true
+                                    binding.videoPlayerTopBarRoot.videoPlayerVideoSliderAllText.text =
+                                        timeParse(player.duration).toString()
+                                    VideoPlayerObjects.duration = player.duration
+                                    VideoPlayerGestureListener.gestureListener(
+                                        this@VideoPlayer, binding, resources
+                                    )
+                                    // 开启手势监听
+                                    binding.videoModel?.allProgressFloat = player.duration.toFloat()
+
+                                    binding.videoModel?.pauseImg = Drawable.createFromXml(
+                                        resources, resources.getXml(R.drawable.baseline_pause_24)
+                                    )
+                                    // 设置pause icon
+                                    binding.videoModel?.screenImg = Drawable.createFromXml(
+                                        resources, resources.getXml(R.drawable.baseline_fullscreen_24)
+                                    )
+                                    // 设置screen control icon
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        //开启协程
+                                        var nowProgress: Long
+                                        while (true) {
+                                            withContext(Dispatchers.Main) {
+                                                nowProgress = player.currentPosition
+                                                if (!VideoPlayerObjects.isMove) {
+                                                    binding.videoPlayerTopBarRoot.videoPlayerVideoSliderNowText.text =
+                                                        timeParse(nowProgress).toString()
+                                                    binding.videoPlayerBottomBarRoot.videoPlayerVideoSlider.value =
+                                                        nowProgress.toFloat()
+                                                }
+                                            }
+                                            delay(500)
+                                        }
+                                    }
+                                    isFirst = false
+                                }
+                                binding.videoPlayerAssemblyRoot.isPlayLodRoot.visibility = View.GONE
+                            }
+
+                            Player.STATE_BUFFERING -> {
+                                binding.videoPlayerAssemblyRoot.isPlayLodRoot.visibility = View.VISIBLE
+                            }
+
+                            Player.STATE_ENDED -> {
+                                if (SettingsItemsUntil.readSettingData("isAutoExit").toBoolean()) {
+                                    VideoPlayerObjects.isAutoFinish = true
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        finish()
+                                    }
+                                }
+                            }
+
+                            Player.STATE_IDLE -> {
+                                ToastUtils.show("播放出错")
+                            }
+                        }
+                    }
+                })
+            }
+            firstLod = false
+        }
+    }
+    @Suppress("DEPRECATION")
+    @SuppressLint("ResourceType")
+    private fun uiStart() {
         ImmersionBar.with(this).transparentBar().hideBar(BarHide.FLAG_HIDE_BAR).init()
-        // 沉浸状态栏
         VideoModel.videoTitle = VideoPlayObjects.title
-        // 设置标题
         binding.videoPlayerBottomBarRoot.videoPlayerVideoSlider.setLabelFormatter { value: Float ->
             return@setLabelFormatter timeParse(value.toLong()).toString()
         }
-        // 设置拖动条标签文本
         VideoPlayerObjects.isAutoFinish = false
-        binding.videoPlayerBottomBarRoot.videoPlayerPauseRoot.setOnClickListener {
+        binding.videoPlayerBottomBarRoot.videoPlayerPause.setOnClickListener {
             if (!binding.videoView.player!!.isPlaying) {
                 val draw = Drawable.createFromXml(
                     resources, resources.getXml(R.drawable.baseline_pause_24)
@@ -86,18 +261,35 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
             }
         }
         binding.videoPlayerTopBarRoot.videoPlayerTopBarBack.setOnClickListener {
-            finish()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                this.finish()
+            }
         }
-        // 设置播放/暂停
         binding.videoPlayerBottomBarRoot.videoPlayerBottomBar.setOnClickListener {
             true
         }
-        binding.videoPlayerBottomBarRoot.videoPlayerScreenRoot.setOnClickListener {
+        binding.videoPlayerBottomBarRoot.videoPlayerLest.setOnClickListener {
+            try {
+                MediaMetadataRetriever().setDataSource(VideoPlayObjects.list[player.currentMediaItemIndex - 1].toString())
+                player.seekToDefaultPosition(player.currentMediaItemIndex - 1)
+            } catch (_: Exception) {
+                player.seekToDefaultPosition(0)
+            }
+        }
+        binding.videoPlayerBottomBarRoot.videoPlayerNext.setOnClickListener {
+            try {
+                player.seekToDefaultPosition(player.currentMediaItemIndex + 1)
+            } catch (_: Exception) {
+                player.seekToDefaultPosition(0)
+            }
+        }
+
+        binding.videoPlayerBottomBarRoot.videoPlayerScreen.setOnClickListener {
             if (VideoPlayerObjects.isInFullScreen) {
+                ImmersionBar.with(this).hideBar(BarHide.FLAG_HIDE_BAR).init()
                 this.window.clearFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
                 )
-                // 设置播放器全屏
                 VideoPlayerObjects.isInFullScreen = false
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 binding.videoModel?.screenImg = Drawable.createFromXml(
@@ -116,7 +308,6 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
                 )
-                // 设置播放器全屏
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 binding.videoModel?.screenImg = Drawable.createFromXml(
                     resources, resources.getXml(R.drawable.baseline_fullscreen_exit_24)
@@ -124,175 +315,22 @@ class VideoPlayer : BaseActivity<ActivityVideoPlayerBinding>() {
                 val param = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT,
-                    2.0f
+                    1.5f
                 )
                 binding.videoPlayerTopRoot.layoutParams = param
                 binding.videoPlayerBottomRoot.layoutParams = param
             }
         }
-        // 设置全屏/取消全屏
-        binding.videoPlayerBottomBarRoot.videoPlayerPictureRoot.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        binding.videoPlayerBottomBarRoot.videoPlayerPic.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val builder = PictureInPictureParams.Builder()
                 val rational =
                     Rational(VideoPlayerObjects.videoWidth, VideoPlayerObjects.videoHeight)
                 builder.setAspectRatio(rational)
-                this.enterPictureInPictureMode(builder.build())
+                this@VideoPlayer.enterPictureInPictureMode(builder.build())
             } else {
                 ToastUtils.show("您的系统版本不支持画中画")
             }
-        }
-        // 设置画中画
-        try {
-            player = ExoPlayer.Builder(this).build()
-            if (intent.getStringExtra("webPath").isNullOrEmpty()) {
-                binding.videoView.player = player
-                when (VideoPlayObjects.type) {
-                    "LOCAL" -> {
-                        player.addMediaItem(MediaItem.fromUri(VideoPlayObjects.paths))
-                        // 如果是本地就载入本地视频路径
-                    }
-
-                    "INTERNET" -> {
-                        player.addMediaItem(MediaItem.fromUri(Uri.parse(VideoPlayObjects.paths)))
-                        // 如果是网络就载入网络视频路径
-                    }
-
-                    "LIST" -> {
-                        try {
-                            val list = VideoPlayObjects.list
-                            val keys = list.keys()
-                            while (keys.hasNext()) {
-                                val key = keys.next().toString()
-                                val uri = list.getString(key)
-                                player.addMediaItem(MediaItem.fromUri(uri))
-                            }
-                            player.seekToDefaultPosition(VideoPlayerObjects.newItem)
-                        } catch (_: Exception) {
-
-                        }
-                    }
-                }
-            } else {
-                val username = intent.getStringExtra("username")
-                val password = intent.getStringExtra("password")
-                val webPath = intent.getStringExtra("webPath")
-
-                val httpDataSourceFactory =
-                    DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true)
-                val dataSourceFactory = DataSource.Factory {
-                    val dataSource = httpDataSourceFactory.createDataSource()
-                    dataSource.setRequestProperty(
-                        "Authorization",
-                        "Basic " + base64Encode("$username:$password").decodeToString()
-                    )
-                    dataSource
-                }
-                player = ExoPlayer.Builder(this)
-                    .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory)).build()
-                    .apply {
-                        if (VideoPlayObjects.type == "LIST") {
-
-                        } else {
-                            addMediaItem(MediaItem.fromUri(webPath.toString()))
-                        }
-                        prepare()
-                    }
-                binding.videoView.player = player
-            }
-        } catch (e: Exception) {
-            ToastUtils.show(e.message)
-            finish()
-            // 捕捉到错误就停止播放
-        } finally {
-            player.prepare()
-            var isFirst = true
-            if (SettingsItemsUntil.readSettingData("isAutoExit").toBoolean().not()) {
-                player.repeatMode = Player.REPEAT_MODE_ALL
-            }
-            player.addListener(object : Player.Listener {
-                @SuppressLint("SwitchIntDef")
-                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    super.onMediaItemTransition(mediaItem, reason)
-                    binding.videoModel?.allProgressString =
-                        timeParse(player.duration).toString()
-                    binding.videoModel?.nowProgressLong = 0
-                    binding.videoModel?.allProgressFloat = player.duration.toFloat()
-                }
-
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    super.onPlaybackStateChanged(playbackState)
-
-                    when (playbackState) {
-                        Player.STATE_READY -> {
-                            if (VideoPlayerObjects.videoWidth == 0 || VideoPlayerObjects.videoHeight != player.videoSize.height) {
-                                VideoPlayerObjects.videoHeight = player.videoSize.height
-                                VideoPlayerObjects.videoWidth = player.videoSize.width
-                            }
-                            if (isFirst) {
-                                player.playWhenReady = true
-                                VideoPlayerGestureListener.gestureListener(
-                                    this@VideoPlayer, binding, resources
-                                )
-                                // 开启手势监听
-                                binding.videoModel?.allProgressString =
-                                    timeParse(player.duration).toString()
-                                // 全部时长
-                                binding.videoModel?.allProgressFloat = player.duration.toFloat()
-                                // 全部时长
-                                binding.videoModel?.pauseImg = Drawable.createFromXml(
-                                    resources, resources.getXml(R.drawable.baseline_pause_24)
-                                )
-                                // 设置pause icon
-                                binding.videoModel?.screenImg = Drawable.createFromXml(
-                                    resources, resources.getXml(R.drawable.baseline_fullscreen_24)
-                                )
-                                val allProgress = player.duration
-                                // 设置screen control icon
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    //开启协程
-                                    var nowProgress = 0L
-                                    while (true) {
-                                        withContext(Dispatchers.Main) {
-                                            nowProgress = player.currentPosition
-                                        }
-                                        if (!VideoPlayerObjects.isMove && nowProgress <= allProgress) {
-                                            binding.videoModel?.nowProgressString =
-                                                timeParse(nowProgress).toString()
-                                            binding.videoModel?.nowProgressLong = nowProgress
-                                        }
-                                        sleep(500)
-                                    }
-                                }
-                                isFirst = false
-                            }
-                            binding.videoPlayerAssemblyRoot.isPlayLodRoot.visibility = View.GONE
-                        }
-
-                        Player.STATE_BUFFERING -> {
-                            binding.videoPlayerAssemblyRoot.isPlayLodRoot.visibility = View.VISIBLE
-                        }
-
-                        Player.STATE_ENDED -> {
-                            if (SettingsItemsUntil.readSettingData("isAutoExit").toBoolean()) {
-                                VideoPlayerObjects.isAutoFinish = true
-                                finish()
-                            }
-                        }
-
-                        Player.STATE_IDLE -> {
-                            ToastUtils.show("播放出错")
-                        }
-                    }
-                }
-            })
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (firstLod) {
-            firstLod = false
         }
     }
 

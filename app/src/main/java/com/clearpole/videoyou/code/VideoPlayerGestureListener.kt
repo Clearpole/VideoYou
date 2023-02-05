@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
+import com.blankj.utilcode.util.ScreenUtils
 import com.bumptech.glide.Glide
 import com.clearpole.videoyou.R
 import com.clearpole.videoyou.databinding.ActivityVideoPlayerBinding
@@ -58,7 +59,9 @@ class VideoPlayerGestureListener {
             )
             slateAnimaBottomSlideOut.duration = 150L
             val alpha01 = AnimationUtils.loadAnimation(context,R.anim.alpha_0_1)
+            alpha01.duration = 150L
             val alpha10 = AnimationUtils.loadAnimation(context,R.anim.alpha_1_0)
+            alpha10.duration = 150L
 
             var isLongClickMode = false
             // 是否处于长按模式
@@ -82,6 +85,7 @@ class VideoPlayerGestureListener {
             // 是否执行
             var isOpenBottomToolBar = false
             // 底栏是否开启
+            val lmd = VideoPlayerObjects.duration/ScreenUtils.getAppScreenWidth()
 
             //设置进度条拖动事件
             activityBinding.videoPlayerBottomBarRoot.videoPlayerVideoSlider.addOnSliderTouchListener(object :
@@ -108,17 +112,22 @@ class VideoPlayerGestureListener {
                 override fun onSingleClick(v: View?) {
                     // 单击屏幕，判断是否打开工具栏，执行操作
                     if (isOpenBottomToolBar) {
+                        activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.startAnimation(alpha10)
                         activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.visibility = View.GONE
                         isOpenBottomToolBar = false
                     } else {
                         if (!isOpenToolBar) {
                             // 如果没打开工具栏，执行打开
                             activityBinding.videoPlayerTopBarRoot.videoPlayerTopBar.visibility = View.VISIBLE
+                            activityBinding.videoPlayerTopBarRoot.videoPlayerTopBar.startAnimation(alpha01)
                             activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.visibility = View.VISIBLE
+                            activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.startAnimation(alpha01)
                             isOpenToolBar = true
                         } else {
                             // 如果打开了工具栏，执行关闭
+                            activityBinding.videoPlayerTopBarRoot.videoPlayerTopBar.startAnimation(alpha10)
                             activityBinding.videoPlayerTopBarRoot.videoPlayerTopBar.visibility = View.GONE
+                            activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.startAnimation(alpha10)
                             activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.visibility = View.GONE
                             isOpenToolBar = false
                         }
@@ -179,8 +188,11 @@ class VideoPlayerGestureListener {
                     isSpeedMode = true
                     vibrator.vibrate(30)
                     if (isOpenToolBar) {
+                        activityBinding.videoPlayerTopBarRoot.videoPlayerTopBar.startAnimation(alpha10)
                         activityBinding.videoPlayerTopBarRoot.videoPlayerTopBar.visibility = View.GONE
+                        activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.startAnimation(alpha10)
                         activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.visibility = View.GONE
+
                     }
                     activityBinding.videoPlayerAssemblyRoot.videoPlayer2x.visibility = View.VISIBLE
                     activityBinding.videoPlayerAssemblyRoot.videoPlayer2x.startAnimation(alpha01)
@@ -204,12 +216,13 @@ class VideoPlayerGestureListener {
                     }
                 }
                 // 当手指在屏幕上移动
-                if (event.action == MotionEvent.ACTION_MOVE) {
+                if (event.action == MotionEvent.ACTION_MOVE&&!isLongClickMode) {
                     if (!isImplements) {
                         player!!.pause()
                         VideoPlayerObjects.isMove = true
                         if (!isOpenBottomToolBar && !isOpenToolBar) {
                             activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.visibility = View.VISIBLE
+                            activityBinding.videoPlayerBottomBarRoot.videoPlayerBottomBar.startAnimation(alpha01)
                             isOpenBottomToolBar = true
                         }
                         isImplements = true
@@ -218,7 +231,7 @@ class VideoPlayerGestureListener {
                     // 目前视频播放进度（Long形式）
                     val nowTime = timeParse(nowPosition)
                     // 目前视频播放进度（时间形式）
-                    val newPosition = nowPosition + (event.x.toLong() - firstX.toLong()) * 20
+                    val newPosition = nowPosition + (event.x.toLong() - firstX.toLong()) * lmd
                     // 目前想要调整的视频播放进度：目前视频的播放进度+(现在手指在屏幕上的位置-第一次手指在屏幕上的位置)×20
                     val newTime = timeParse(newPosition)
                     // 目前想要调整的视频播放进度（时间形式）

@@ -1,5 +1,6 @@
 package com.clearpole.videoyou.objects
 
+import com.thegrizzlylabs.sardineandroid.DavResource
 import org.json.JSONObject
 
 class VideoPlayObjects {
@@ -7,6 +8,6 @@ class VideoPlayObjects {
         lateinit var type: String
         lateinit var paths: String
         lateinit var title: String
-        lateinit var list: JSONObject
+        var list = listOf<Any>()
     }
 }

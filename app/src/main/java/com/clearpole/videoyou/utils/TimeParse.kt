@@ -17,7 +17,7 @@ class TimeParse {
                 time += "0"
             }
             time += second
-            return time
+            return time!!.trim()
         }
     }
 }

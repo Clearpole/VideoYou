@@ -9,6 +9,7 @@ import com.clearpole.videoyou.VideoPlayer
 import com.clearpole.videoyou.databinding.ActivityMainBinding
 import com.clearpole.videoyou.databinding.MediaStoreListItemBinding
 import com.clearpole.videoyou.objects.VideoPlayObjects
+import com.clearpole.videoyou.objects.VideoPlayerObjects
 import com.clearpole.videoyou.utils.GetVideoThumbnail
 import com.drake.brv.BindingAdapter
 import com.drake.brv.item.ItemBind
@@ -33,6 +34,7 @@ data class MediaStoreListModel(
             VideoPlayObjects.paths = path
             VideoPlayObjects.title = title
             VideoPlayObjects.type = "LOCAL"
+            VideoPlayObjects.list = listOf(path)
             val intent = Intent(holder.context, VideoPlayer::class.java)
             startActivity(intent)
         }

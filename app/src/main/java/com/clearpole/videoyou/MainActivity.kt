@@ -671,6 +671,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                                 bindingViews[2].findViewById<RecyclerView>(R.id.listview)
                                             rv.bindingAdapter.checkedAll(false)
                                             binding.mainCheck.visibility = View.GONE
+                                            binding.mainCheck.getBadge(R.id.chose)!!.number = 0
                                             MainObjects.chooseList.clear()
                                         }
                                     }.setNeutralButton("取消") { _, _ ->
@@ -679,6 +680,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                         rv.bindingAdapter.checkedAll(false)
                                         binding.mainCheck.visibility = View.GONE
                                         MainObjects.chooseList.clear()
+                                        binding.mainCheck.getBadge(R.id.chose)!!.number = 0
                                     }.show()
                             }
                         }
@@ -769,6 +771,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     MainObjects.chooseList.clear()
                                     rv.bindingAdapter.checkedAll(false)
+                                    bind.mainCheck.getBadge(R.id.chose)!!.number = 0
                                     this.cancel()
                                 }
                                 true
