@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -16,14 +17,13 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,12 +86,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 class VideoPlayerActivity : ComponentActivity() {
     object VideoType {
         const val LOCAL = "LOCAL"
         const val STREAM = "STREAM"
         const val WEBDAV = "WEBDAV"
     }
+
+    val all = mutableStateOf(true)
+
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,12 +152,7 @@ class VideoPlayerActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     VideoView(
-                        this,
-                        loading,
-                        nowPosition,
-                        allPosition,
-                        seekTo,
-                        seeking
+                        this, loading, nowPosition, allPosition, seekTo
                     )
                     Control(
                         this,
@@ -170,7 +169,8 @@ class VideoPlayerActivity : ComponentActivity() {
                         brightTo,
                         brightIng,
                         volumeTo,
-                        voluming
+                        voluming,
+                        all
                     )
                 }
             }
@@ -184,6 +184,38 @@ class VideoPlayerActivity : ComponentActivity() {
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onUserLeaveHint() {
+        if (SettingsItemsUntil.readSettingData("isAutoPicture").toBoolean()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val builder = PictureInPictureParams.Builder()
+                val rational =
+                    Rational(VideoPlayerObjects.videoWidth, VideoPlayerObjects.videoHeight)
+                builder.setAspectRatio(rational)
+                this.enterPictureInPictureMode(builder.build())
+            }
+        } else {
+            VideoPlayerObjects.isIntoHome = true
+            player.pause()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (VideoPlayerObjects.isIntoHome) {
+            player.play()
+            VideoPlayerObjects.isIntoHome = false
+        }
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean, newConfig: Configuration
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        all.value = !isInPictureInPictureMode
+    }
 }
 
 @SuppressLint("InflateParams")
@@ -203,10 +235,13 @@ fun Control(
     brightTo: MutableState<Float>,
     brightIng: MutableState<Boolean>,
     volumeTo: MutableState<Float>,
-    voluming: MutableState<Boolean>
+    voluming: MutableState<Boolean>,
+    all: MutableState<Boolean>
 ) {
     val screenX = ScreenUtils.getAppScreenWidth()
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .alpha(if (all.value) 1f else 0f)) {
         Column(modifier = Modifier
             .fillMaxSize()
             .draggable(orientation = Orientation.Vertical,
@@ -377,10 +412,8 @@ fun Control(
                         .height(50.dp)
                         .align(Alignment.BottomStart)
                         .padding(start = 25.dp, bottom = 15.dp)
-                        .clickable(
-                            interactionSource = MutableInteractionSource(), indication = null
-                        ) {
-                            finish(activity, player)
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = { finish(activity, player) })
                         },
                     tint = Color.White
                 )
@@ -403,10 +436,10 @@ fun Control(
                         .height(50.dp)
                         .align(Alignment.BottomEnd)
                         .padding(end = 25.dp, bottom = 15.dp)
-                        .clickable(
-                            interactionSource = MutableInteractionSource(), indication = null
-                        ) {
-                            finish(activity, player)
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = {
+                                finish(activity, player)
+                            })
                         },
                     tint = Color.White
                 )
@@ -469,6 +502,13 @@ fun Control(
                             modifier = Modifier
                                 .weight(1f, true)
                                 .fillMaxSize()
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onTap = {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                            activity.enterPictureInPictureMode()
+                                        }
+                                    })
+                                }
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_picture_in_picture_24),
@@ -554,14 +594,18 @@ fun Control(
                                     )
                                     .fillMaxSize()
                                     .weight(1f)
-                                    .clickable {
-                                        try {
-                                            MediaMetadataRetriever().setDataSource(VideoPlayObjects.list[player.currentMediaItemIndex - 1].toString())
-                                            player.seekToDefaultPosition(player.currentMediaItemIndex - 1)
-                                        } catch (_: Exception) {
-                                            player.seekToDefaultPosition(0)
-                                        }
-                                        pausing.value = false
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(onTap = {
+                                            try {
+                                                MediaMetadataRetriever().setDataSource(
+                                                    VideoPlayObjects.list[player.currentMediaItemIndex - 1].toString()
+                                                )
+                                                player.seekToDefaultPosition(player.currentMediaItemIndex - 1)
+                                            } catch (_: Exception) {
+                                                player.seekToDefaultPosition(0)
+                                            }
+                                            pausing.value = false
+                                        })
                                     })
                             Icon(painter = painterResource(id = if (pausing.value) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
                                 tint = Color.White,
@@ -572,14 +616,16 @@ fun Control(
                                     )
                                     .fillMaxSize()
                                     .weight(1f)
-                                    .clickable{
-                                        if (pausing.value) {
-                                            player.play()
-                                            pausing.value = false
-                                        } else {
-                                            player.pause()
-                                            pausing.value = true
-                                        }
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(onTap = {
+                                            if (pausing.value) {
+                                                player.play()
+                                                pausing.value = false
+                                            } else {
+                                                player.pause()
+                                                pausing.value = true
+                                            }
+                                        })
                                     })
                             Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
                                 tint = Color.White,
@@ -591,72 +637,121 @@ fun Control(
                                     .padding(end = 25.dp)
                                     .fillMaxSize()
                                     .weight(1f)
-                                    .clickable {
-                                        try {
-                                            player.seekToDefaultPosition(player.currentMediaItemIndex + 1)
-                                        } catch (_: Exception) {
-                                            player.seekToDefaultPosition(0)
-                                        }
-                                        pausing.value = false
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(onTap = {
+                                            try {
+                                                player.seekToDefaultPosition(player.currentMediaItemIndex + 1)
+                                            } catch (_: Exception) {
+                                                player.seekToDefaultPosition(0)
+                                            }
+                                            pausing.value = false
+                                        })
                                     })
                         }
                     } else {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .align(Alignment.CenterVertically),
-                            horizontalArrangement = Arrangement.Center
+                                .align(Alignment.CenterVertically)
                         ) {
-                            Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24),
-                                tint = Color.White,
-                                contentDescription = "上一首",
+                            Row(
                                 modifier = Modifier
-                                    .align(
-                                        Alignment.CenterVertically
-                                    )
-                                    .width(80.dp)
-                                    .clickable {
-                                        try {
-                                            MediaMetadataRetriever().setDataSource(VideoPlayObjects.list[player.currentMediaItemIndex - 1].toString())
-                                            player.seekToDefaultPosition(player.currentMediaItemIndex - 1)
-                                        } catch (_: Exception) {
-                                            player.seekToDefaultPosition(0)
-                                        }
-                                        pausing.value = false
-                                    })
-                            Icon(painter = painterResource(id = if (pausing.value) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
-                                tint = Color.White,
-                                contentDescription = "暂停播放",
+                                    .weight(1f, true)
+                                    .fillMaxSize()
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(onTap = {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                                activity.enterPictureInPictureMode()
+                                            }
+                                        })
+                                    }
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_picture_in_picture_24),
+                                    tint = Color.White,
+                                    contentDescription = "小窗播放",
+                                    modifier = Modifier
+                                        .align(
+                                            Alignment.CenterVertically
+                                        )
+                                        .padding(start = 25.dp)
+                                )
+                                Text(
+                                    text = "小窗播放",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 15.dp
+                                        )
+                                        .align(Alignment.CenterVertically)
+                                )
+                            }
+                            Row(
                                 modifier = Modifier
-                                    .align(
-                                        Alignment.CenterVertically
-                                    )
-                                    .width(40.dp)
-                                    .clickable {
-                                        if (pausing.value) {
-                                            player.play()
-                                            pausing.value = false
-                                        } else {
-                                            player.pause()
-                                            pausing.value = true
-                                        }
-                                    })
-                            Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
-                                tint = Color.White,
-                                contentDescription = "下一首",
-                                modifier = Modifier
-                                    .align(
-                                        Alignment.CenterVertically
-                                    )
-                                    .width(80.dp)
-                                    .clickable{
-                                        try {
-                                            player.seekToDefaultPosition(player.currentMediaItemIndex + 1)
-                                        } catch (_: Exception) {
-                                            player.seekToDefaultPosition(0)
-                                        }
-                                        pausing.value = false
-                                    })
+                                    .fillMaxSize()
+                                    .weight(1f, true),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(painter = painterResource(id = R.drawable.baseline_skip_previous_24),
+                                    tint = Color.White,
+                                    contentDescription = "上一首",
+                                    modifier = Modifier
+                                        .align(
+                                            Alignment.CenterVertically
+                                        )
+                                        .width(80.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(onTap = {
+                                                try {
+                                                    MediaMetadataRetriever().setDataSource(
+                                                        VideoPlayObjects.list[player.currentMediaItemIndex - 1].toString()
+                                                    )
+                                                    player.seekToDefaultPosition(player.currentMediaItemIndex - 1)
+                                                } catch (_: Exception) {
+                                                    player.seekToDefaultPosition(0)
+                                                }
+                                                pausing.value = false
+                                            })
+                                        })
+                                Icon(painter = painterResource(id = if (pausing.value) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
+                                    tint = Color.White,
+                                    contentDescription = "暂停播放",
+                                    modifier = Modifier
+                                        .align(
+                                            Alignment.CenterVertically
+                                        )
+                                        .width(40.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(onTap = {
+                                                if (pausing.value) {
+                                                    player.play()
+                                                    pausing.value = false
+                                                } else {
+                                                    player.pause()
+                                                    pausing.value = true
+                                                }
+                                            })
+                                        })
+                                Icon(painter = painterResource(id = R.drawable.baseline_skip_next_24),
+                                    tint = Color.White,
+                                    contentDescription = "下一首",
+                                    modifier = Modifier
+                                        .align(
+                                            Alignment.CenterVertically
+                                        )
+                                        .width(80.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(onTap = {
+                                                try {
+                                                    player.seekToDefaultPosition(player.currentMediaItemIndex + 1)
+                                                } catch (_: Exception) {
+                                                    player.seekToDefaultPosition(0)
+                                                }
+                                                pausing.value = false
+                                            })
+                                        })
+                            }
                         }
                     }
                 }
@@ -683,14 +778,18 @@ fun Control(
             Box(modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(0.2f))
-                .clickable {
-                    if (VideoPlayerObjects.isInFullScreen) {
-                        VideoPlayerObjects.isInFullScreen = false
-                        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                    } else {
-                        VideoPlayerObjects.isInFullScreen = true
-                        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                    }
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        if (VideoPlayerObjects.isInFullScreen) {
+                            VideoPlayerObjects.isInFullScreen = false
+                            activity.requestedOrientation =
+                                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        } else {
+                            VideoPlayerObjects.isInFullScreen = true
+                            activity.requestedOrientation =
+                                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        }
+                    })
                 }) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_screen_rotation_24),
@@ -716,19 +815,21 @@ fun Control(
             Box(modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(0.2f))
-                .clickable {
-                    if (lock.value) {
-                        lock.value = false
-                        lockIcon.value = R.drawable.outline_lock_24
-                    } else {
-                        lock.value = true
-                        lockIcon.value = R.drawable.baseline_lock_open_24
-                        ImmersionBar
-                            .with(activity)
-                            .hideBar(BarHide.FLAG_HIDE_BAR)
-                            .transparentBar()
-                            .init()
-                    }
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        if (lock.value) {
+                            lock.value = false
+                            lockIcon.value = R.drawable.outline_lock_24
+                        } else {
+                            lock.value = true
+                            lockIcon.value = R.drawable.baseline_lock_open_24
+                            ImmersionBar
+                                .with(activity)
+                                .hideBar(BarHide.FLAG_HIDE_BAR)
+                                .transparentBar()
+                                .init()
+                        }
+                    })
                 }) {
                 Icon(
                     painter = painterResource(id = lockIcon.value),
@@ -753,10 +854,12 @@ fun Control(
             Box(modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White.copy(0.7f))
-                .clickable {
-                    player.play()
-                    VideoPlayerObjects.isPauseMode = false
-                    pausing.value = false
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        player.play()
+                        VideoPlayerObjects.isPauseMode = false
+                        pausing.value = false
+                    })
                 }) {
                 Image(
                     painter = painterResource(id = R.drawable.baseline_play_arrow_24),
@@ -875,7 +978,6 @@ fun VideoView(
     nowPosition: MutableState<Float>,
     allPosition: MutableState<Float>,
     seekTo: MutableState<Float>,
-    seeking: MutableState<Boolean>
 ) {
     var videoView: PlayerView? = null
     AndroidView(factory = {
@@ -919,8 +1021,7 @@ fun VideoView(
                             VideoPlayObjects.list.forEachIndexed { _, davResource ->
                                 val uri =
                                     kv.decodeString("WebDavIpRoot") + (davResource as DavResource).path.subStringX(
-                                        "/",
-                                        null
+                                        "/", null
                                     )
                                 addMediaItem(MediaItem.fromUri(uri))
                             }
@@ -932,6 +1033,7 @@ fun VideoView(
                     ToastUtils.showShort("出现错误")
                 }
             }
+            player.seekToDefaultPosition(VideoPlayerObjects.newItem)
             videoView!!.player = player
             player.prepare()
             player.addListener(object : Player.Listener {
@@ -943,6 +1045,13 @@ fun VideoView(
                             player.play()
                             loading.value = false
                             seekTo.value = 0f
+                            VideoPlayerObjects.videoHeight = player.videoSize.height
+                            VideoPlayerObjects.videoWidth = player.videoSize.width
+                            if (player.videoSize.width > player.videoSize.height) {
+                                VideoPlayerObjects.isInFullScreen = true
+                                activity.requestedOrientation =
+                                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                            }
                             allPosition.value = player.duration.toFloat()
                             slider!!.valueTo = player.duration.toFloat()
                             CoroutineScope(Dispatchers.Main).launch {

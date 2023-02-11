@@ -78,7 +78,7 @@ android {
 }
 
 static def version() {
-    return "0.5.0"
+    return "0.5.1"
 }
 
 static def isCanary() {
@@ -90,7 +90,7 @@ static def appName() {
 }
 
 static def canary() {
-    return "Beta01"
+    return "Canary01"
 }
 
 static def releaseTime() {
