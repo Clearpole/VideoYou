@@ -5,7 +5,7 @@ import android.net.Uri
 import com.blankj.utilcode.util.ActivityUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.clearpole.videoyou.VideoPlayer
+import com.clearpole.videoyou.VideoPlayerActivity
 import com.clearpole.videoyou.databinding.SearchItemBinding
 import com.clearpole.videoyou.objects.VideoPlayObjects
 import com.clearpole.videoyou.utils.GetVideoThumbnail
@@ -27,11 +27,12 @@ data class SearchModel(
     override fun onBind(holder: BindingAdapter.BindingViewHolder) {
         val binding = holder.getBinding<SearchItemBinding>()
         binding.itemText.text = title
-        binding.searchItem.setOnClickListener {
+        binding.itemRoot.setOnClickListener {
             VideoPlayObjects.paths = path
             VideoPlayObjects.title = title
             VideoPlayObjects.type = "LOCAL"
-            val intent = Intent(holder.context, VideoPlayer::class.java)
+            VideoPlayObjects.list = listOf(path)
+            val intent = Intent(holder.context, VideoPlayerActivity::class.java)
             ActivityUtils.startActivity(intent)
         }
         CoroutineScope(Dispatchers.IO).launch {

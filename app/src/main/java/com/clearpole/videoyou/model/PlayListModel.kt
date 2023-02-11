@@ -5,7 +5,7 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.clearpole.videoyou.VideoPlayer
+import com.clearpole.videoyou.VideoPlayerActivity
 import com.clearpole.videoyou.databinding.MediaStoreListItemBinding
 import com.clearpole.videoyou.objects.VideoPlayObjects
 import com.clearpole.videoyou.objects.VideoPlayerObjects
@@ -47,7 +47,7 @@ data class PlayListModel(
                 VideoPlayObjects.type = "LOCAL"
                 VideoPlayerObjects.newItem = holder.layoutPosition
                 withContext(Dispatchers.Main) {
-                    val intent = Intent(holder.context, VideoPlayer::class.java)
+                    val intent = Intent(holder.context, VideoPlayerActivity::class.java)
                     ActivityUtils.startActivity(intent)
                 }
             }

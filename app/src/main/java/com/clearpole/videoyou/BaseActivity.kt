@@ -16,6 +16,7 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
     lateinit var binding: VB
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         ToastUtils.init(this.application)
         MMKV.initialize(this)
         val kv = MMKV.mmkvWithID("theme")

@@ -27,4 +27,5 @@
     <string name="playDoneAutoEdit">播放完毕自动退出</string>
     <string name="playDoneAutoEditInfo">在播放完毕时自动退出</string>
     <string name="removePlayList">删除播放列表</string>
+    <string name="title_activity_video_player">VideoPlayerActivity</string>
 </resources>

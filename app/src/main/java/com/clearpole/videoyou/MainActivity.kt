@@ -224,12 +224,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 MaterialAlertDialogBuilder(
                     context, MaterialAlertDialog_Material3
                 ).setTitle("输入链接").setView(view).setNegativeButton("开看！") { _, _ ->
-                    VideoPlayObjects.type = "INTERNET"
+                    VideoPlayObjects.type = "STREAM"
                     VideoPlayObjects.title =
                         view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
                     VideoPlayObjects.paths =
                         view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
-                    startActivity(Intent(context, VideoPlayer::class.java))
+                    startActivity(Intent(context, VideoPlayerActivity::class.java))
                 }.show()
             }
 
@@ -725,7 +725,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 VideoPlayObjects.paths = getModel<FolderModel>(layoutPosition).path
                                 VideoPlayObjects.title = getModel<FolderModel>(layoutPosition).title
                                 VideoPlayObjects.type = "LOCAL"
-                                val intent = Intent(context, VideoPlayer::class.java)
+                                VideoPlayObjects.list = listOf(getModel<FolderModel>(layoutPosition).path)
+                                val intent = Intent(context, VideoPlayerActivity::class.java)
                                 startActivity(intent)
                             }
                         }

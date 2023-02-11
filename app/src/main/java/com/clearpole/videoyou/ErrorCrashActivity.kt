@@ -1,7 +1,6 @@
 package com.clearpole.videoyou
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.clearpole.videoyou.databinding.ActivityErrorCrashBinding
 import com.clearpole.videoyou.utils.IsNightMode

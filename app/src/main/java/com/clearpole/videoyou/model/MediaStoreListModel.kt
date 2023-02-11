@@ -5,11 +5,10 @@ import android.net.Uri
 import com.blankj.utilcode.util.ActivityUtils.startActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.clearpole.videoyou.VideoPlayer
+import com.clearpole.videoyou.VideoPlayerActivity
 import com.clearpole.videoyou.databinding.ActivityMainBinding
 import com.clearpole.videoyou.databinding.MediaStoreListItemBinding
 import com.clearpole.videoyou.objects.VideoPlayObjects
-import com.clearpole.videoyou.objects.VideoPlayerObjects
 import com.clearpole.videoyou.utils.GetVideoThumbnail
 import com.drake.brv.BindingAdapter
 import com.drake.brv.item.ItemBind
@@ -35,7 +34,7 @@ data class MediaStoreListModel(
             VideoPlayObjects.title = title
             VideoPlayObjects.type = "LOCAL"
             VideoPlayObjects.list = listOf(path)
-            val intent = Intent(holder.context, VideoPlayer::class.java)
+            val intent = Intent(holder.context, VideoPlayerActivity::class.java)
             startActivity(intent)
         }
 

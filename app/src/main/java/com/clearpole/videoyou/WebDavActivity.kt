@@ -109,7 +109,7 @@ class WebDavActivity : BaseActivity<ActivityWebDavBinding>() {
                                         kv.decodeString("WebDavIpRoot") + getModel<WebDavModel>(
                                             layoutPosition
                                         ).title.path.subStringX("/", null)
-                                    val int = Intent(this@WebDavActivity, VideoPlayer::class.java)
+                                    val int = Intent(this@WebDavActivity, VideoPlayerActivity::class.java)
                                     int.putExtra("webPath", webPath)
                                     int.putExtra("username", username)
                                     int.putExtra("password", password)
