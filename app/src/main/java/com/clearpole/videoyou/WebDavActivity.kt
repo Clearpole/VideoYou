@@ -115,7 +115,7 @@ class WebDavActivity : BaseActivity<ActivityWebDavBinding>() {
                                     int.putExtra("password", password)
                                     VideoPlayObjects.title =
                                         getModel<WebDavModel>(layoutPosition).title.name
-                                    VideoPlayObjects.list = list.sortedBy { it.name }
+                                    VideoPlayObjects.list = list.sortedBy { it.name }.toMutableList()
                                     VideoPlayObjects.type = "WEBDAV"
                                     startActivity(int)
                                 }

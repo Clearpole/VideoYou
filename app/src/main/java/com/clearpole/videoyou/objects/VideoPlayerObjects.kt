@@ -1,5 +1,7 @@
 package com.clearpole.videoyou.objects
 
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.material.slider.Slider
 
@@ -18,6 +20,10 @@ class VideoPlayerObjects {
         var isMove : Boolean = false
         var fingerX : Long = 0L
         var slider : Slider? = null
+        var pausing : Boolean = false
+        var first : Boolean = true
+        var chose : ConstraintLayout? = null
+        var rv: RecyclerView? = null
         lateinit var player: ExoPlayer
         fun fix(){
             videoWidth = 0
@@ -33,6 +39,10 @@ class VideoPlayerObjects {
             isCrash = true
             isMove = false
             slider  = null
+            first = true
+            pausing = false
+            chose = null
+            rv = null
         }
     }
 }

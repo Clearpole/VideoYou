@@ -8,6 +8,6 @@ class VideoPlayObjects {
         lateinit var type: String
         lateinit var paths: String
         lateinit var title: String
-        var list = listOf<Any>()
+        var list = mutableListOf<Any>()
     }
 }

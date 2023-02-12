@@ -11,7 +11,8 @@
     <item name="color9" tools:targetApi="s" type="color">@android:color/system_accent1_800</item>
     <item name="color10" tools:targetApi="s" type="color">@android:color/system_accent1_900</item>
     <item name="color11" tools:targetApi="s" type="color">@android:color/system_accent1_1000</item>
-
+    <item name="chose" type="color">#1c0000ff</item>
+    <item name="tm" type="color">#00000000</item>
     <color name="cxw_theme_light_primary">#006686</color>
     <color name="cxw_theme_light_onPrimary">#FFFFFF</color>
     <color name="cxw_theme_light_primaryContainer">#C0E8FF</color>

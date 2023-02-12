@@ -41,7 +41,7 @@ data class PlayListModel(
                     val key = keys.next().toString()
                     val uri = list.getString(key)
                     array.add(uri)
-                    VideoPlayObjects.list = array
+                    VideoPlayObjects.list = array.toMutableList()
                 }
                 VideoPlayObjects.title = title.toString()
                 VideoPlayObjects.type = "LOCAL"

@@ -33,11 +33,15 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        resConfigs "zh-rCN"
     }
 
     buildTypes {
         release {
+            minifyEnabled true
             zipAlignEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             applicationVariants.all { variant ->
                 variant.outputs.all {
                     def fileName = "${appName()}-${version()}"
@@ -135,9 +139,6 @@ dependencies {
     implementation 'com.github.getActivity:ToastUtils:11.2'
     // 权限请求框架：https://github.com/getActivity/XXPermissions
     implementation 'com.github.getActivity:XXPermissions:16.6'
-    // 网络请求框架：https://github.com/getActivity/EasyHttp
-    implementation 'com.github.getActivity:EasyHttp:11.5'
-    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.19'
     // Glide图片加载框架：https://github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:4.14.2'
     androidTestImplementation platform('androidx.compose:compose-bom:2022.10.00')

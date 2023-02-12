@@ -725,7 +725,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 VideoPlayObjects.paths = getModel<FolderModel>(layoutPosition).path
                                 VideoPlayObjects.title = getModel<FolderModel>(layoutPosition).title
                                 VideoPlayObjects.type = "LOCAL"
-                                VideoPlayObjects.list = listOf(getModel<FolderModel>(layoutPosition).path)
+                                VideoPlayObjects.list = mutableListOf(getModel<FolderModel>(layoutPosition).path)
                                 val intent = Intent(context, VideoPlayerActivity::class.java)
                                 startActivity(intent)
                             }

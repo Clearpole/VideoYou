@@ -7,6 +7,7 @@ import android.app.Activity
 import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -18,7 +19,16 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -37,6 +47,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,11 +67,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.EncodeUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.clearpole.videoyou.model.PlayerSideSheetModel
 import com.clearpole.videoyou.objects.VideoPlayObjects
 import com.clearpole.videoyou.objects.VideoPlayerObjects
 import com.clearpole.videoyou.objects.VideoPlayerObjects.Companion.player
@@ -69,6 +82,9 @@ import com.clearpole.videoyou.ui.theme.VideoYouOptTheme
 import com.clearpole.videoyou.utils.SettingsItemsUntil
 import com.clearpole.videoyou.utils.SubStringX.Companion.subStringX
 import com.clearpole.videoyou.utils.TimeParse
+import com.drake.brv.utils.linear
+import com.drake.brv.utils.models
+import com.drake.brv.utils.setup
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -76,6 +92,7 @@ import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.gyf.immersionbar.BarHide
@@ -94,11 +111,33 @@ class VideoPlayerActivity : ComponentActivity() {
         const val WEBDAV = "WEBDAV"
     }
 
-    val all = mutableStateOf(true)
+    private val all = mutableStateOf(true)
 
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val kv = MMKV.mmkvWithID("theme")
+        when (kv.decodeInt("theme")) {
+            0 -> {
+                DynamicColors.applyToActivityIfAvailable(this)
+            }
+
+            R.style.hzt -> {
+                setTheme(R.style.hzt)
+            }
+
+            R.style.cxw -> {
+                setTheme(R.style.cxw)
+            }
+
+            R.style.szy -> {
+                setTheme(R.style.szy)
+            }
+
+            R.style.xfy -> {
+                setTheme(R.style.xfy)
+            }
+        }
         if (SettingsItemsUntil.readSettingData("isScreenOn").toBoolean()) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
@@ -127,7 +166,7 @@ class VideoPlayerActivity : ComponentActivity() {
                 mutableStateOf(false)
             }
             val lockIcon = remember {
-                mutableStateOf(R.drawable.outline_lock_24)
+                mutableStateOf(R.drawable.baseline_lock_open_24)
             }
             val seekTo = remember {
                 mutableStateOf(0F)
@@ -147,12 +186,26 @@ class VideoPlayerActivity : ComponentActivity() {
             val brightIng = remember {
                 mutableStateOf(false)
             }
+            val screen = remember {
+                mutableStateOf(false)
+            }
+            val sideSheet = remember {
+                mutableStateOf(false)
+            }
             VideoYouOptTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     VideoView(
-                        this, loading, nowPosition, allPosition, seekTo
+                        this,
+                        loading,
+                        nowPosition,
+                        allPosition,
+                        seekTo,
+                        pause,
+                        screen,
+                        resources,
+                        kv.decodeInt("theme")
                     )
                     Control(
                         this,
@@ -170,8 +223,13 @@ class VideoPlayerActivity : ComponentActivity() {
                         brightIng,
                         volumeTo,
                         voluming,
-                        all
+                        all,
+                        screen,
+                        sideSheet,
+                        resources,
+                        kv.decodeInt("theme")
                     )
+                    SideSheet(kv.decodeInt("theme"), screen, sideSheet)
                 }
             }
         }
@@ -196,6 +254,7 @@ class VideoPlayerActivity : ComponentActivity() {
             }
         } else {
             VideoPlayerObjects.isIntoHome = true
+            VideoPlayerObjects.pausing = true
             player.pause()
         }
     }
@@ -204,6 +263,7 @@ class VideoPlayerActivity : ComponentActivity() {
         super.onResume()
         if (VideoPlayerObjects.isIntoHome) {
             player.play()
+            VideoPlayerObjects.pausing = false
             VideoPlayerObjects.isIntoHome = false
         }
     }
@@ -215,6 +275,77 @@ class VideoPlayerActivity : ComponentActivity() {
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         all.value = !isInPictureInPictureMode
+    }
+}
+
+@SuppressLint("ComposableNaming", "InflateParams")
+@Composable
+fun SideSheet(
+    theme: Int, screen: MutableState<Boolean>, sideSheet: MutableState<Boolean>
+) {
+    AnimatedVisibility(visible = sideSheet.value,
+        enter = slideInVertically() + fadeIn(),
+        exit = slideOutVertically() + fadeOut()
+    ) {
+        Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
+            Box(modifier = Modifier
+                .weight(1f, true)
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        sideSheet.value = false
+                    })
+                })
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                    .weight(0.7f, true)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .background(Color.Black.copy(alpha = 0.8f))
+                        .fillMaxSize()
+                ) {
+                    Column(
+                        modifier = /*if (screen.value) Modifier
+                            .fillMaxSize()
+                            .weight(1f, true) else */Modifier.width(0.dp)
+                    ) {
+
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1.5f, true)
+                    ) {
+                        AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                            LayoutInflater.from(it).inflate(R.layout.compose_videolist, null)
+                                .apply {
+                                    val rv = this.findViewById<RecyclerView>(R.id.list_side)
+                                    VideoPlayerObjects.rv = rv
+                                    rv.linear().setup {
+                                        addType<PlayerSideSheetModel> { R.layout.media_store_list_item }
+                                    }.models =
+                                        getPlayList(resources, theme, VideoPlayerObjects.newItem)
+                                }
+                        })
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun getPlayList(resources: Resources, theme: Int, item: Int): MutableList<Any> {
+    return mutableListOf<Any>().apply {
+        for (index in 0 until VideoPlayObjects.list.size) {
+            add(
+                PlayerSideSheetModel(
+                    VideoPlayObjects.list[index].toString(), resources, theme, item
+                )
+            )
+        }
     }
 }
 
@@ -236,12 +367,18 @@ fun Control(
     brightIng: MutableState<Boolean>,
     volumeTo: MutableState<Float>,
     voluming: MutableState<Boolean>,
-    all: MutableState<Boolean>
+    all: MutableState<Boolean>,
+    screen: MutableState<Boolean>,
+    sideSheet: MutableState<Boolean>,
+    resources: Resources,
+    theme: Int
 ) {
     val screenX = ScreenUtils.getAppScreenWidth()
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .alpha(if (all.value) 1f else 0f)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .alpha(if (all.value) 1f else 0f)
+    ) {
         Column(modifier = Modifier
             .fillMaxSize()
             .draggable(orientation = Orientation.Vertical,
@@ -282,26 +419,34 @@ fun Control(
                 })
             .draggable(orientation = Orientation.Horizontal,
                 state = rememberDraggableState(onDelta = {
-                    val seek = seekTo.value + it * 20
-                    seekTo.value = if (seek > allPosition.value) {
-                        allPosition.value
-                    } else if (seek < 0) {
-                        0f
-                    } else {
-                        seek
+                    if (lock.value.not()) {
+                        val seek = seekTo.value + it * 20
+                        seekTo.value = if (seek > allPosition.value) {
+                            allPosition.value
+                        } else if (seek < 0) {
+                            0f
+                        } else {
+                            seek
+                        }
+                        slider!!.value = seekTo.value
                     }
-                    slider!!.value = seekTo.value
                 }),
                 onDragStarted = {
-                    player.pause()
-                    VideoPlayerObjects.isMove = true
-                    seekTo.value = nowPosition.value
-                    seeking.value = true
+                    if (lock.value.not()) {
+                        player.pause()
+                        VideoPlayerObjects.isMove = true
+                        seekTo.value = nowPosition.value
+                        seeking.value = true
+                    }
                 },
                 onDragStopped = {
-                    player.seekTo(seekTo.value.toLong())
-                    VideoPlayerObjects.isMove = false
-                    seeking.value = false
+                    if (lock.value.not()) {
+                        player.seekTo(seekTo.value.toLong())
+                        VideoPlayerObjects.isMove = false
+                        seeking.value = false
+                        VideoPlayerObjects.pausing = false
+                        pausing.value = false
+                    }
                 })
             .pointerInput(Unit) {
                 detectTapGestures(onLongPress = {
@@ -317,15 +462,14 @@ fun Control(
                     }
                 }, onDoubleTap = {
                     if (lock.value.not()) {
-                        val pause = VideoPlayerObjects.isPauseMode
-                        if (pause) {
+                        if (VideoPlayerObjects.pausing) {
                             player.play()
-                            VideoPlayerObjects.isPauseMode = false
                             pausing.value = false
+                            VideoPlayerObjects.pausing = false
                         } else {
                             player.pause()
-                            VideoPlayerObjects.isPauseMode = true
                             pausing.value = true
+                            VideoPlayerObjects.pausing = true
                         }
                     }
                 }, onTap = {
@@ -438,19 +582,21 @@ fun Control(
                         .padding(end = 25.dp, bottom = 15.dp)
                         .pointerInput(Unit) {
                             detectTapGestures(onTap = {
-                                finish(activity, player)
+                                sideSheet.value = true
+                                VideoPlayerObjects.rv?.scrollToPosition(VideoPlayerObjects.newItem)
                             })
                         },
                     tint = Color.White
                 )
             }
 
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomStart)
-                .pointerInput(Unit) {
-                    detectTapGestures { }
-                }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomStart)
+                    .pointerInput(Unit) {
+                        detectTapGestures { }
+                    }) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = TimeParse.timeParse(nowPosition.value.toLong()).toString(),
@@ -498,18 +644,16 @@ fun Control(
                         .height(if (VideoPlayerObjects.isInFullScreen) 25.dp else 50.dp)
                 ) {
                     if (VideoPlayerObjects.isInFullScreen) {
-                        Row(
-                            modifier = Modifier
-                                .weight(1f, true)
-                                .fillMaxSize()
-                                .pointerInput(Unit) {
-                                    detectTapGestures(onTap = {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                            activity.enterPictureInPictureMode()
-                                        }
-                                    })
-                                }
-                        ) {
+                        Row(modifier = Modifier
+                            .weight(1f, true)
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                        activity.enterPictureInPictureMode()
+                                    }
+                                })
+                            }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_picture_in_picture_24),
                                 tint = Color.White,
@@ -607,7 +751,7 @@ fun Control(
                                             pausing.value = false
                                         })
                                     })
-                            Icon(painter = painterResource(id = if (pausing.value) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
+                            Icon(painter = painterResource(id = if (pausing.value && VideoPlayerObjects.pausing) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
                                 tint = Color.White,
                                 contentDescription = "暂停播放",
                                 modifier = Modifier
@@ -621,9 +765,11 @@ fun Control(
                                             if (pausing.value) {
                                                 player.play()
                                                 pausing.value = false
+                                                VideoPlayerObjects.pausing = false
                                             } else {
                                                 player.pause()
                                                 pausing.value = true
+                                                VideoPlayerObjects.pausing = true
                                             }
                                         })
                                     })
@@ -654,18 +800,16 @@ fun Control(
                                 .fillMaxWidth()
                                 .align(Alignment.CenterVertically)
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .weight(1f, true)
-                                    .fillMaxSize()
-                                    .pointerInput(Unit) {
-                                        detectTapGestures(onTap = {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                                activity.enterPictureInPictureMode()
-                                            }
-                                        })
-                                    }
-                            ) {
+                            Row(modifier = Modifier
+                                .weight(1f, true)
+                                .fillMaxSize()
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onTap = {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                            activity.enterPictureInPictureMode()
+                                        }
+                                    })
+                                }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_picture_in_picture_24),
                                     tint = Color.White,
@@ -714,7 +858,7 @@ fun Control(
                                                 pausing.value = false
                                             })
                                         })
-                                Icon(painter = painterResource(id = if (pausing.value) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
+                                Icon(painter = painterResource(id = if (pausing.value && VideoPlayerObjects.pausing) R.drawable.baseline_play_arrow_24 else R.drawable.baseline_pause_24),
                                     tint = Color.White,
                                     contentDescription = "暂停播放",
                                     modifier = Modifier
@@ -727,9 +871,11 @@ fun Control(
                                                 if (pausing.value) {
                                                     player.play()
                                                     pausing.value = false
+                                                    VideoPlayerObjects.pausing = false
                                                 } else {
                                                     player.pause()
                                                     pausing.value = true
+                                                    VideoPlayerObjects.pausing = true
                                                 }
                                             })
                                         })
@@ -782,10 +928,12 @@ fun Control(
                     detectTapGestures(onTap = {
                         if (VideoPlayerObjects.isInFullScreen) {
                             VideoPlayerObjects.isInFullScreen = false
+                            screen.value = false
                             activity.requestedOrientation =
                                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                         } else {
                             VideoPlayerObjects.isInFullScreen = true
+                            screen.value = true
                             activity.requestedOrientation =
                                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                         }
@@ -819,10 +967,10 @@ fun Control(
                     detectTapGestures(onTap = {
                         if (lock.value) {
                             lock.value = false
-                            lockIcon.value = R.drawable.outline_lock_24
+                            lockIcon.value = R.drawable.baseline_lock_open_24
                         } else {
                             lock.value = true
-                            lockIcon.value = R.drawable.baseline_lock_open_24
+                            lockIcon.value = R.drawable.outline_lock_24
                             ImmersionBar
                                 .with(activity)
                                 .hideBar(BarHide.FLAG_HIDE_BAR)
@@ -845,10 +993,10 @@ fun Control(
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .width(80.dp)
-                .height(if (pausing.value) 80.dp else 0.dp)
+                .width(50.dp)
+                .height(if (pausing.value && VideoPlayerObjects.pausing) 50.dp else 0.dp)
                 .clip(
-                    RoundedCornerShape(40.dp)
+                    RoundedCornerShape(25.dp)
                 )
         ) {
             Box(modifier = Modifier
@@ -861,12 +1009,13 @@ fun Control(
                         pausing.value = false
                     })
                 }) {
-                Image(
+                Icon(
                     painter = painterResource(id = R.drawable.baseline_play_arrow_24),
                     contentDescription = "暂停",
                     modifier = Modifier.align(
                         Alignment.Center
-                    )
+                    ),
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -978,6 +1127,10 @@ fun VideoView(
     nowPosition: MutableState<Float>,
     allPosition: MutableState<Float>,
     seekTo: MutableState<Float>,
+    pausing: MutableState<Boolean>,
+    screen: MutableState<Boolean>,
+    resources: Resources,
+    theme: Int
 ) {
     var videoView: PlayerView? = null
     AndroidView(factory = {
@@ -1037,6 +1190,15 @@ fun VideoView(
             videoView!!.player = player
             player.prepare()
             player.addListener(object : Player.Listener {
+                @SuppressLint("UseCompatLoadingForDrawables")
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    super.onMediaItemTransition(mediaItem, reason)
+                    VideoPlayerObjects.rv!!.models =
+                        getPlayList(resources, theme, player.currentMediaItemIndex)
+                    VideoPlayerObjects.chose!!.background = resources.getDrawable(R.color.tm)
+                    VideoPlayerObjects.newItem = player.currentMediaItemIndex
+                }
+
                 @SuppressLint("SwitchIntDef")
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     super.onPlaybackStateChanged(playbackState)
@@ -1045,22 +1207,34 @@ fun VideoView(
                             player.play()
                             loading.value = false
                             seekTo.value = 0f
+                            VideoPlayerObjects.pausing = false
+                            pausing.value = false
                             VideoPlayerObjects.videoHeight = player.videoSize.height
                             VideoPlayerObjects.videoWidth = player.videoSize.width
-                            if (player.videoSize.width > player.videoSize.height) {
+                            if (player.videoSize.width > player.videoSize.height && VideoPlayerObjects.first) {
                                 VideoPlayerObjects.isInFullScreen = true
+                                screen.value = true
                                 activity.requestedOrientation =
                                     ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                VideoPlayerObjects.first = false
                             }
-                            allPosition.value = player.duration.toFloat()
-                            slider!!.valueTo = player.duration.toFloat()
+                            try {
+                                allPosition.value = player.duration.toFloat()
+                                slider!!.valueTo = player.duration.toFloat()
+                            } catch (_: Exception) {
+                            }
                             CoroutineScope(Dispatchers.Main).launch {
                                 while (true) {
+                                    val d = player.duration
+                                    val c = player.currentPosition
                                     if (VideoPlayerObjects.isCrash) {
                                         break
-                                    } else if (player.duration > player.currentPosition && VideoPlayerObjects.isMove.not()) {
-                                        nowPosition.value = player.currentPosition.toFloat()
-                                        slider!!.value = player.currentPosition.toFloat()
+                                    } else if (d > c && VideoPlayerObjects.isMove.not()) {
+                                        try {
+                                            nowPosition.value = d.toFloat()
+                                            slider!!.value = c.toFloat()
+                                        } catch (_: java.lang.Exception) {
+                                        }
                                     }
                                     delay(500)
                                 }

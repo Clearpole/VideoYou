@@ -31,7 +31,7 @@ data class SearchModel(
             VideoPlayObjects.paths = path
             VideoPlayObjects.title = title
             VideoPlayObjects.type = "LOCAL"
-            VideoPlayObjects.list = listOf(path)
+            VideoPlayObjects.list = mutableListOf(path)
             val intent = Intent(holder.context, VideoPlayerActivity::class.java)
             ActivityUtils.startActivity(intent)
         }
