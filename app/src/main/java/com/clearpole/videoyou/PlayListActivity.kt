@@ -2,6 +2,7 @@ package com.clearpole.videoyou
 
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
+import com.blankj.utilcode.util.ToastUtils
 import com.clearpole.videoyou.code.PlayList
 import com.clearpole.videoyou.databinding.ActivityPlayListBinding
 import com.clearpole.videoyou.model.PlayListModel
@@ -12,7 +13,6 @@ import com.drake.brv.utils.setup
 import com.google.android.material.R.style.MaterialAlertDialog_Material3
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gyf.immersionbar.ImmersionBar
-import com.hjq.toast.ToastUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,7 +44,7 @@ class PlayListActivity : BaseActivity<ActivityPlayListBinding>() {
                         .setNegativeButton("删除") { _, _ ->
                             PlayList.removeList(name!!)
                             finish()
-                            ToastUtils.show("刷新后生效")
+                            ToastUtils.showShort("刷新后生效")
                         }
                         .setNeutralButton("取消") { _, _ -> }
                         .show()

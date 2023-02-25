@@ -1,5 +1,7 @@
 package com.clearpole.videoyou.objects
 
+import android.annotation.SuppressLint
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.ExoPlayer
@@ -22,7 +24,10 @@ class VideoPlayerObjects {
         var slider : Slider? = null
         var pausing : Boolean = false
         var first : Boolean = true
-        var chose : ConstraintLayout? = null
+        var speed : Float = 2f
+        var playMode : Int = ExoPlayer.REPEAT_MODE_ALL
+        @SuppressLint("StaticFieldLeak")
+        var chose : TextView? = null
         var rv: RecyclerView? = null
         lateinit var player: ExoPlayer
         fun fix(){
@@ -43,6 +48,8 @@ class VideoPlayerObjects {
             pausing = false
             chose = null
             rv = null
+            speed = 2f
+            playMode = ExoPlayer.REPEAT_MODE_ALL
         }
     }
 }

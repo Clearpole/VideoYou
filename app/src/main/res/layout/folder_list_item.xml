@@ -19,6 +19,7 @@
         android:checked="@{model.checked}"
         android:layout_margin="15dp"
         app:cardCornerRadius="15dp"
+        android:transitionName="VideoYouInfoImageName"
         app:cardElevation="0dp">
 
         <LinearLayout
@@ -33,7 +34,7 @@
                     android:id="@+id/page2_rv_item_img"
                     android:layout_width="match_parent"
                     android:layout_height="85dp"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="centerCrop"/>
                 <LinearLayout
                     android:id="@+id/choose_zz"
                     android:orientation="vertical"

@@ -3,6 +3,7 @@ package com.clearpole.videoyou
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.widget.AdapterView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blankj.utilcode.util.ToastUtils
 import com.bumptech.glide.Glide
 import com.clearpole.videoyou.databinding.ActivitySettingBinding
 import com.clearpole.videoyou.model.SettingThemeModel
@@ -58,10 +60,10 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
         binding.settingAbout.intoQq.setOnClickListener {
             MaterialAlertDialogBuilder(
                 this, MaterialAlertDialog_Material3
-            ).setTitle("加入QQ频道").setCancelable(false)
-                .setMessage("加入频道可获取最新版本更新，是否访问外部链接以加入QQ频道？")
-                .setNegativeButton("取消") { _, _ -> }.setPositiveButton("加入QQ频道") { _, _ ->
-                    val uri = Uri.parse("https://pd.qq.com/s/61vf6d5qi")
+            ).setTitle("加入Telegram群组").setCancelable(false)
+                .setMessage("加入频道可获取最新版本更新，是否访问外部链接以加入TG频道？")
+                .setNegativeButton("取消") { _, _ -> }.setPositiveButton("让我访问！") { _, _ ->
+                    val uri = Uri.parse("https://t.me/VideoYouNotice")
                     val intent = Intent(Intent.ACTION_VIEW, uri)
                     startActivity(intent)
                 }.show()
@@ -74,11 +76,26 @@ class SettingActivity : BaseActivity<ActivitySettingBinding>() {
         binding.settingAbout.intoDon.setOnClickListener {
             val view = this.layoutInflater.inflate(R.layout.setting_about_do, null)
             Glide.with(this)
-                .load("https://gitee.com/clearpole/VideoYou-WebSite/raw/master/img/jz.png")
+                .load("https://img-blog.csdnimg.cn/fe506848b4514d9b84ad4f67358866e6.png")
                 .into(view.findViewById(R.id.don))
-            MaterialAlertDialogBuilder(this, MaterialAlertDialog_Material3).setTitle("捐献")
-                .setMessage("捐赠并不会对你带来任何好处，但可以帮助开发者坚定维护软件下信心。感谢每一位投喂的人！")
-                .setView(view).setNegativeButton("确定") { _, _ -> }.show()
+            MaterialAlertDialogBuilder(this, MaterialAlertDialog_Material3).setTitle("捐赠")
+                .setMessage("捐赠并不会对你带来任何好处，但可以让开发者坚定维护软件的信心。您的捐赠信息会被投放在VideoYou的官方频道。感谢每一位捐赠的人！")
+                .setView(view).setNegativeButton("确定") { _, _ -> }
+                .setPositiveButton("打开微信") { _, _ ->
+                    val intent: Intent =
+                        this.packageManager.getLaunchIntentForPackage("com.tencent.mm")!!
+                    if (this.packageManager
+                            .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null
+                    ) {
+                        intent.putExtra("LauncherUI.From.Scaner.Shortcut", true)
+                        intent.action = "android.intent.action.VIEW"
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                    } else {
+                        ToastUtils.showShort("打开失败啦")
+                    }
+                }.show()
         }
     }
 

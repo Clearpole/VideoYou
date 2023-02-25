@@ -1,4 +1,6 @@
-@file:Suppress("DEPRECATION", "PreviewAnnotationInFunctionWithParameters")
+@file:Suppress("DEPRECATION", "PreviewAnnotationInFunctionWithParameters") @file:OptIn(
+    ExperimentalMaterial3Api::class
+)
 
 package com.clearpole.videoyou
 
@@ -20,15 +22,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -38,16 +35,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SelectableChipColors
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -192,6 +202,9 @@ class VideoPlayerActivity : ComponentActivity() {
             val sideSheet = remember {
                 mutableStateOf(false)
             }
+            val volume = remember {
+                mutableStateOf(60f)
+            }
             VideoYouOptTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize()
@@ -205,7 +218,8 @@ class VideoPlayerActivity : ComponentActivity() {
                         pause,
                         screen,
                         resources,
-                        kv.decodeInt("theme")
+                        kv.decodeInt("theme"),
+                        volume
                     )
                     Control(
                         this,
@@ -227,9 +241,10 @@ class VideoPlayerActivity : ComponentActivity() {
                         screen,
                         sideSheet,
                         resources,
-                        kv.decodeInt("theme")
+                        kv.decodeInt("theme"),
+                        volume
                     )
-                    SideSheet(kv.decodeInt("theme"), screen, sideSheet)
+                    SideSheet(kv.decodeInt("theme"), screen, sideSheet, volume)
                 }
             }
         }
@@ -281,56 +296,183 @@ class VideoPlayerActivity : ComponentActivity() {
 @SuppressLint("ComposableNaming", "InflateParams")
 @Composable
 fun SideSheet(
-    theme: Int, screen: MutableState<Boolean>, sideSheet: MutableState<Boolean>
+    theme: Int,
+    screen: MutableState<Boolean>,
+    sideSheet: MutableState<Boolean>,
+    volume: MutableState<Float>
 ) {
-    AnimatedVisibility(visible = sideSheet.value,
-        enter = slideInVertically() + fadeIn(),
-        exit = slideOutVertically() + fadeOut()
+    val speed = remember {
+        mutableStateOf(2.0f)
+    }
+    val play = remember {
+        mutableStateOf(ExoPlayer.REPEAT_MODE_ALL)
+    }
+    AnimatedVisibility(
+        visible = sideSheet.value,
+        enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
+        exit = slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth }) + fadeOut()
     ) {
-        Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
-            Box(modifier = Modifier
-                .weight(1f, true)
+        Row(
+            modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         sideSheet.value = false
                     })
-                })
+                }, horizontalArrangement = Arrangement.End
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
-                    .weight(0.7f, true)
+                    .weight(if (screen.value) 0.7f else 2.5f, true)
             ) {
                 Row(
                     modifier = Modifier
                         .background(Color.Black.copy(alpha = 0.8f))
                         .fillMaxSize()
                 ) {
-                    Column(
-                        modifier = /*if (screen.value) Modifier
-                            .fillMaxSize()
-                            .weight(1f, true) else */Modifier.width(0.dp)
-                    ) {
+                    if (screen.value) {
+                        Spacer(modifier = Modifier.width(25.dp))
+                        Column(
+                            modifier = if (screen.value) Modifier
+                                .fillMaxSize()
+                                .weight(1f, true) else Modifier
+                                .width(0.dp)
+                                .verticalScroll(
+                                    rememberScrollState()
+                                )
+                        ) {
+                            Text(
+                                text = "倍速选项",
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 15.dp, top = 20.dp)
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(
+                                text = "仅更改倍速速率，开启倍速请长按视频",
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 15.dp),
+                                fontSize = 10.sp
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            val speedMode = arrayListOf(1.25f, 1.5f, 2f, 2.5f, 3f, 4f, 5f, 7f, 10f)
+                            LazyRow {
+                                items(speedMode.size) {
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    FilterChip(selected = true,
+                                        onClick = {
+                                            speed.value = speedMode[it]
+                                            VideoPlayerObjects.speed = speedMode[it]
+                                        },
+                                        label = { Text(text = "${speedMode[it]}x") },
+                                        leadingIcon = if (speed.value == speedMode[it]) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Done,
+                                                    contentDescription = "Localized Description",
+                                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                )
+                                            }
+                                        } else {
+                                            null
+                                        })
+                                }
+                            }
 
+                            Text(
+                                text = "循环选项",
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 15.dp, top = 20.dp)
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(
+                                text = "列表播放是不循环，播放完毕即结束",
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 15.dp),
+                                fontSize = 10.sp
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            val playMode = arrayListOf("列表播放", "列表循环", "单片循环")
+                            LazyRow {
+                                items(playMode.size) {
+                                    val mode = when (playMode[it]) {
+                                        "列表播放" -> {
+                                            ExoPlayer.REPEAT_MODE_OFF
+                                        }
+
+                                        "列表循环" -> {
+                                            ExoPlayer.REPEAT_MODE_ALL
+                                        }
+
+                                        "单片循环" -> {
+                                            ExoPlayer.REPEAT_MODE_ONE
+                                        }
+
+                                        else -> {
+                                            ExoPlayer.REPEAT_MODE_ALL
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    FilterChip(selected = true,
+                                        onClick = {
+                                            VideoPlayerObjects.playMode = mode
+                                            play.value = mode
+                                            player.repeatMode = VideoPlayerObjects.playMode
+                                        },
+                                        label = { Text(text = playMode[it]) },
+                                        leadingIcon = if (play.value == mode) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Done,
+                                                    contentDescription = "Localized Description",
+                                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                                )
+                                            }
+                                        } else {
+                                            null
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors())
+                                }
+                            }
+
+                            Text(
+                                text = "音量增益",
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 15.dp, top = 20.dp)
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(
+                                text = "设置播放时的音量增益..而不是手机音量",
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 15.dp),
+                                fontSize = 10.sp
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Slider(value = volume.value, onValueChange = {
+                                player.volume = it
+                                volume.value = it
+                            }, colors = SliderDefaults.colors(), valueRange = 0f..1f)
+                        }
                     }
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .weight(1.5f, true)
+                            .weight(0.8f, true),
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                        AndroidView(modifier = Modifier.fillMaxWidth(), factory = {
                             LayoutInflater.from(it).inflate(R.layout.compose_videolist, null)
                                 .apply {
                                     val rv = this.findViewById<RecyclerView>(R.id.list_side)
                                     VideoPlayerObjects.rv = rv
                                     rv.linear().setup {
-                                        addType<PlayerSideSheetModel> { R.layout.media_store_list_item }
+                                        addType<PlayerSideSheetModel> { R.layout.play_list_videos_item }
                                     }.models =
                                         getPlayList(resources, theme, VideoPlayerObjects.newItem)
                                 }
                         })
                     }
+                    Spacer(modifier = Modifier.weight(0.1f))
                 }
             }
         }
@@ -342,7 +484,7 @@ private fun getPlayList(resources: Resources, theme: Int, item: Int): MutableLis
         for (index in 0 until VideoPlayObjects.list.size) {
             add(
                 PlayerSideSheetModel(
-                    VideoPlayObjects.list[index].toString(), resources, theme, item
+                    VideoPlayObjects.list[index].toString(), resources, item
                 )
             )
         }
@@ -371,7 +513,8 @@ fun Control(
     screen: MutableState<Boolean>,
     sideSheet: MutableState<Boolean>,
     resources: Resources,
-    theme: Int
+    theme: Int,
+    volume: MutableState<Float>
 ) {
     val screenX = ScreenUtils.getAppScreenWidth()
     Box(
@@ -456,7 +599,7 @@ fun Control(
                         VideoPlayerObjects.isSpeedMode = false
                         speeding.value = false
                     } else {
-                        player.setPlaybackSpeed(2f)
+                        player.setPlaybackSpeed(VideoPlayerObjects.speed)
                         VideoPlayerObjects.isSpeedMode = true
                         speeding.value = true
                     }
@@ -583,6 +726,10 @@ fun Control(
                         .pointerInput(Unit) {
                             detectTapGestures(onTap = {
                                 sideSheet.value = true
+                                ImmersionBar
+                                    .with(activity)
+                                    .hideBar(BarHide.FLAG_HIDE_BAR)
+                                    .init()
                                 VideoPlayerObjects.rv?.scrollToPosition(VideoPlayerObjects.newItem)
                             })
                         },
@@ -590,13 +737,12 @@ fun Control(
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomStart)
-                    .pointerInput(Unit) {
-                        detectTapGestures { }
-                    }) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+                .pointerInput(Unit) {
+                    detectTapGestures { }
+                }) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = TimeParse.timeParse(nowPosition.value.toLong()).toString(),
@@ -675,11 +821,14 @@ fun Control(
                                     .align(Alignment.CenterVertically)
                             )
                         }
-                        Row(
-                            modifier = Modifier
-                                .weight(1f, true)
-                                .fillMaxSize()
-                        ) {
+                        Row(modifier = Modifier
+                            .weight(1f, true)
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = {
+                                    sideSheet.value = true
+                                })
+                            }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.outline_speed_24),
                                 tint = Color.White,
@@ -699,13 +848,29 @@ fun Control(
                                     .align(Alignment.CenterVertically)
                             )
                         }
+                        val noVolume = remember {
+                            mutableStateOf(false)
+                        }
                         Row(
                             modifier = Modifier
                                 .weight(1f, true)
                                 .fillMaxSize()
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onTap = {
+                                        if (noVolume.value){
+                                            player.volume = 1f
+                                            volume.value = 1f
+                                            noVolume.value = false
+                                        }else{
+                                            volume.value = 0f
+                                            player.volume = 0f
+                                            noVolume.value = true
+                                        }
+                                    })
+                                }
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.outline_hearing_disabled_24),
+                                painter = painterResource(id = if (noVolume.value) R.drawable.baseline_hearing_24 else R.drawable.outline_hearing_disabled_24),
                                 tint = Color.White,
                                 contentDescription = "静音播放",
                                 modifier = Modifier.align(
@@ -713,7 +878,7 @@ fun Control(
                                 )
                             )
                             Text(
-                                text = "静音播放",
+                                text = if (noVolume.value) "开启声音" else "静音播放",
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
@@ -1107,7 +1272,7 @@ fun Control(
             ) {
                 Box(modifier = Modifier.background(Color.Black.copy(alpha = 0.5f))) {
                     Text(
-                        text = "当前速率：2x",
+                        text = "当前速率：${VideoPlayerObjects.speed}x",
                         color = Color.White,
                         modifier = Modifier.padding(5.dp),
                         fontSize = 12.sp
@@ -1130,7 +1295,8 @@ fun VideoView(
     pausing: MutableState<Boolean>,
     screen: MutableState<Boolean>,
     resources: Resources,
-    theme: Int
+    theme: Int,
+    volume: MutableState<Float>
 ) {
     var videoView: PlayerView? = null
     AndroidView(factory = {
@@ -1193,10 +1359,13 @@ fun VideoView(
                 @SuppressLint("UseCompatLoadingForDrawables")
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     super.onMediaItemTransition(mediaItem, reason)
-                    VideoPlayerObjects.rv!!.models =
-                        getPlayList(resources, theme, player.currentMediaItemIndex)
-                    VideoPlayerObjects.chose!!.background = resources.getDrawable(R.color.tm)
-                    VideoPlayerObjects.newItem = player.currentMediaItemIndex
+                    try {
+                        VideoPlayerObjects.rv!!.models =
+                            getPlayList(resources, theme, player.currentMediaItemIndex)
+                        VideoPlayerObjects.chose!!.setTextColor(android.graphics.Color.parseColor("#ffffff"))
+                        VideoPlayerObjects.newItem = player.currentMediaItemIndex
+                    } catch (_: Exception) {
+                    }
                 }
 
                 @SuppressLint("SwitchIntDef")
@@ -1204,6 +1373,7 @@ fun VideoView(
                     super.onPlaybackStateChanged(playbackState)
                     when (playbackState) {
                         Player.STATE_READY -> {
+                            volume.value = player.volume
                             player.play()
                             loading.value = false
                             seekTo.value = 0f
@@ -1218,23 +1388,17 @@ fun VideoView(
                                     ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                                 VideoPlayerObjects.first = false
                             }
-                            try {
-                                allPosition.value = player.duration.toFloat()
-                                slider!!.valueTo = player.duration.toFloat()
-                            } catch (_: Exception) {
-                            }
+                            allPosition.value = player.duration.toFloat()
+                            slider!!.valueTo = player.duration.toFloat()
                             CoroutineScope(Dispatchers.Main).launch {
                                 while (true) {
-                                    val d = player.duration
-                                    val c = player.currentPosition
+
                                     if (VideoPlayerObjects.isCrash) {
                                         break
-                                    } else if (d > c && VideoPlayerObjects.isMove.not()) {
-                                        try {
-                                            nowPosition.value = d.toFloat()
-                                            slider!!.value = c.toFloat()
-                                        } catch (_: java.lang.Exception) {
-                                        }
+                                    } else if (player.duration > player.currentPosition && VideoPlayerObjects.isMove.not()) {
+                                        nowPosition.value = player.currentPosition.toFloat()
+                                        slider!!.value = player.currentPosition.toFloat()
+                                        slider!!.valueTo = player.duration.toFloat()
                                     }
                                     delay(500)
                                 }
@@ -1254,7 +1418,7 @@ fun VideoView(
                         }
 
                         Player.STATE_IDLE -> {
-                            com.hjq.toast.ToastUtils.show("播放出错")
+                            ToastUtils.showShort("播放出错")
                         }
                     }
                 }
@@ -1278,7 +1442,7 @@ private fun finish(activity: Activity, player: Player) {
                     builder.setAspectRatio(rational)
                     activity.enterPictureInPictureMode(builder.build())
                 } else {
-                    com.hjq.toast.ToastUtils.show("您的系统版本不支持画中画")
+                   ToastUtils.showShort("您的系统版本不支持画中画")
                 }
             }.setNeutralButton("退出播放") { _, _ ->
                 VideoPlayerObjects.fix()

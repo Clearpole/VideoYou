@@ -94,7 +94,7 @@
                         android:layout_centerVertical="true"
                         android:layout_marginStart="15dp"
                         android:layout_toEndOf="@id/s_5_3"
-                        android:text="加入官方频道"
+                        android:text="加入Telegram群组"
                         android:textSize="17sp" />
 
                     <ImageView

@@ -8,7 +8,7 @@ class SettingsItemsUntil {
         private val settings = arrayListOf(
             arrayListOf("darkMode", "0"),
             arrayListOf("isAutoPicture", "false"),
-            arrayListOf("isDialogPlayer", "true"),
+            arrayListOf("isDialogPlayer", "false"),
             arrayListOf("isScreenOn", "true"),
             arrayListOf("isAutoExit", "false")
         )

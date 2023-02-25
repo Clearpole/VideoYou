@@ -48,7 +48,6 @@ open class FolderTreeModel(
                     FolderModel(
                         title = objects.getString("title"),
                         uri = Uri.parse(objects.getString("uri")),
-                        contentResolver = contentResolver,
                         path = objects.getString("path")
                     )
                 )

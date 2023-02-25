@@ -26,7 +26,6 @@ open class FolderModel(
     var vis: Int = View.GONE,
     val title: String,
     val uri: Uri,
-    val contentResolver: ContentResolver,
     val path: String
 ) : ItemExpand, ItemBind, BaseObservable() {
     val videoTitle get() = title
@@ -34,10 +33,9 @@ open class FolderModel(
 
         val binding = holder.getBinding<FolderListItemBinding>()
         CoroutineScope(Dispatchers.IO).launch {
-            val bitmap = GetVideoThumbnail.getVideoThumbnail(contentResolver, uri)
             withContext(Dispatchers.Main) {
                 Glide.with(holder.context)
-                    .load(bitmap)
+                    .load(uri)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(binding.page2RvItemImg)
             }

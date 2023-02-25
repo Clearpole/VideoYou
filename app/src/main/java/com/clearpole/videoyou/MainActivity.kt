@@ -14,12 +14,14 @@ import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.size
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,11 +31,14 @@ import com.blankj.utilcode.util.ActivityUtils.startActivity
 import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.clearpole.videoyou.MainActivity.Utils.firstInto
 import com.clearpole.videoyou.adapter.MainViewPager
 import com.clearpole.videoyou.code.MarqueeTextView
 import com.clearpole.videoyou.code.PlayList
 import com.clearpole.videoyou.databinding.ActivityMainBinding
+import com.clearpole.videoyou.databinding.FolderListItemBinding
+import com.clearpole.videoyou.databinding.VideoInfoUtilsItemBinding
 import com.clearpole.videoyou.model.FolderModel
 import com.clearpole.videoyou.model.FolderTreeModel
 import com.clearpole.videoyou.model.MainSettingModel
@@ -64,7 +69,6 @@ import com.google.android.material.textview.MaterialTextView
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
-import com.hjq.toast.ToastUtils
 import com.tencent.mmkv.MMKV
 import com.thegrizzlylabs.sardineandroid.Sardine
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine
@@ -131,7 +135,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                             RefreshMediaStore.updateMedia(
                                 context, Environment.getExternalStorageDirectory().toString()
                             )
-                            ToastUtils.show(context.getString(R.string.onClickRefreshMedia))
+                            ToastUtils.showShort(context.getString(R.string.onClickRefreshMedia))
                             true
                         }
 
@@ -209,7 +213,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                         }
 
                         else -> {
-                            ToastUtils.show(menuItem.itemId)
+                            ToastUtils.showShort(menuItem.itemId)
                         }
                     }
                     true
@@ -271,10 +275,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                             val sardine: Sardine = OkHttpSardine()
                             try {
                                 if (!ip.contains("http")) {
-                                    ToastUtils.show("WebDav 服务器格式不正确！")
+                                    ToastUtils.showShort("WebDav 服务器格式不正确！")
                                     return@launch
                                 } else if (!ip.contains(ipRoot)) {
-                                    ToastUtils.show("根目录或Dav目录输入有误！")
+                                    ToastUtils.showShort("根目录或Dav目录输入有误！")
                                     return@launch
                                 }
                                 sardine.list(webdavIp)
@@ -282,7 +286,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 try {
                                     sardine.setCredentials(username, password)
                                     sardine.list(webdavIp)
-                                    ToastUtils.show("登录成功！")
+                                    ToastUtils.showShort("登录成功！")
                                     kv.encode("isLogin", 1)
                                 } catch (e: Exception) {
                                     ToastUtils.showLong("连接失败\n${e.message}")
@@ -320,22 +324,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 binding.mainNavigationView.setOnItemSelectedListener { item ->
                     when (item.itemId) {
                         R.id.page1 -> {
-                            binding.mainViewpager.currentItem = 0
+                            binding.mainViewpager.setCurrentItem(0,false)
                             true
                         }
 
                         R.id.page2 -> {
-                            binding.mainViewpager.currentItem = 1
+                            binding.mainViewpager.setCurrentItem(1,false)
                             true
                         }
 
                         R.id.page3 -> {
-                            binding.mainViewpager.currentItem = 2
+                            binding.mainViewpager.setCurrentItem(2,false)
                             true
                         }
 
                         R.id.page4 -> {
-                            binding.mainViewpager.currentItem = 3
+                            binding.mainViewpager.setCurrentItem(3,false)
                             true
                         }
 
@@ -373,6 +377,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 bindingViews.add(page3)
                 bindingViews.add(page4)
                 binding.mainViewpager.adapter = MainViewPager(bindingViews)
+                binding.mainViewpager.setCanSwipe(false)
+                //binding.mainViewpager.setPageTransformer(true,DepthFieldTransformer())
 
                 if (SettingsItemsUntil.readSettingData("agreeApp") == "true") {
                 } else {
@@ -392,13 +398,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 Playlist.addPlayList(bindingViews!!, activity, context)
                 Playlist.loadPlayList(bindingViews!!)
                 Playlist.refreshList(bindingViews!!,context,binding)
-                MediaStore.mediaStoreList(bindingViews!!, binding)
+                MediaStore.mediaStoreList(bindingViews!!, binding,activity)
                 FolderList.addPlayListFile(binding, bindingViews!!, context)
-                MediaStore.refreshList(bindingViews!!, context, binding)
-                FolderList.refreshList(bindingViews!!, context, binding)
+                MediaStore.refreshList(bindingViews!!, context, binding,activity)
+                FolderList.refreshList(bindingViews!!, context, binding,activity)
                 Settings.settings(context, bindingViews!!)
                 CoroutineScope(Dispatchers.Main).launch {
-                    FolderList.folderList(bindingViews!!, context, binding)
+                    FolderList.folderList(bindingViews!!, context, binding,activity)
                 }
             }
 
@@ -465,7 +471,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                         val name =
                                             view.findViewById<TextInputEditText>(R.id.edit_view).text.toString()
                                         if (name.isEmpty()) {
-                                            ToastUtils.show("请输入播放列表名称")
+                                            ToastUtils.showShort("请输入播放列表名称")
                                             return@withContext
                                         }
                                         if (!PlayList.readList().contains(name)) {
@@ -489,7 +495,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                             }
                                             rv.scrollToPosition(0)
                                         } else {
-                                            ToastUtils.show("存在相同名称的播放列表，无法创建")
+                                            ToastUtils.showShort("存在相同名称的播放列表，无法创建")
                                         }
                                     }
                                 }
@@ -557,10 +563,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             object MediaStore {
                 @SuppressLint("CutPasteId", "SetTextI18n")
                 fun mediaStoreList(
-                    bindingViews: ArrayList<View>, binding: ActivityMainBinding
+                    bindingViews: ArrayList<View>, binding: ActivityMainBinding,activity: Activity
                 ) {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val models = getMediaStores(DatabaseStorage.readDataByData()!!, binding)
+                        val models = getMediaStores(DatabaseStorage.readDataByData()!!, binding,activity)
                         launch(Dispatchers.Main) {
                             bindingViews[1].findViewById<RecyclerView>(R.id.listview).linear()
                                 .setup {
@@ -577,7 +583,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 }
 
                 private fun getMediaStores(
-                    kv: JSONArray, binding: ActivityMainBinding
+                    kv: JSONArray, binding: ActivityMainBinding,activity: Activity
                 ): MutableList<Any> {
                     return mutableListOf<Any>().apply {
                         MainObjects.allSize = 0
@@ -591,7 +597,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     size = ByteToString.byteToString(size),
                                     uri = Uri.parse(jsonObject.getString("uri")),
                                     path = jsonObject.getString("path"),
-                                    mainBind = binding
+                                    mainBind = binding,
+                                    activity = activity
                                 )
                             )
                         }
@@ -601,7 +608,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
                 @SuppressLint("UseCompatLoadingForDrawables")
                 fun refreshList(
-                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding
+                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding,activity: Activity
                 ) {
                     bindingViews[1].findViewById<SwipeRefreshLayout>(R.id.refresh_view)
                         .setOnRefreshListener {
@@ -614,7 +621,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 ) {
                                 }
                                 withContext(Dispatchers.Main) {
-                                    mediaStoreList(bindingViews, binding)
+                                    mediaStoreList(bindingViews, binding,activity)
                                     bindingViews[1].findViewById<SwipeRefreshLayout>(R.id.refresh_view).isRefreshing =
                                         false
                                 }
@@ -640,7 +647,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     binding.mainCheck.visibility = View.VISIBLE
                                     MainObjects.isChoose = true
                                 }else{
-                                    ToastUtils.show("您还没有新建任何播放列表")
+                                    ToastUtils.showShort("您还没有新建任何播放列表")
                                 }
                             } else {
                                 MainObjects.isChoose = false
@@ -653,7 +660,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                         playList.toTypedArray(), 0, null
                                     ).setNegativeButton("确定") { dialog, _ ->
                                         if (MainObjects.chooseList.size==0) {
-                                            ToastUtils.show("您还没有选择任何视频")
+                                            ToastUtils.showShort("您还没有选择任何视频")
                                             val rv =
                                                 bindingViews[2].findViewById<RecyclerView>(R.id.listview)
                                             rv.bindingAdapter.checkedAll(false)
@@ -688,7 +695,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
                 @SuppressLint("UseCompatLoadingForDrawables")
                 suspend fun folderList(
-                    bindingViews: ArrayList<View>, context: Context, bind: ActivityMainBinding
+                    bindingViews: ArrayList<View>, context: Context, bind: ActivityMainBinding,activity: Activity
                 ) {
                     val rv = bindingViews[2].findViewById<RecyclerView>(R.id.listview)
                     val layoutManager = HoverGridLayoutManager(context, 2)
@@ -726,7 +733,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                 VideoPlayObjects.title = getModel<FolderModel>(layoutPosition).title
                                 VideoPlayObjects.type = "LOCAL"
                                 VideoPlayObjects.list = mutableListOf(getModel<FolderModel>(layoutPosition).path)
-                                val intent = Intent(context, VideoPlayerActivity::class.java)
+                                VideoPlayObjects.uri = getModel<FolderModel>().uri
+                                val intent = Intent(context, VideoInfoActivity::class.java)
+                                intent.putExtra("type",1)
+                                intent.data = getModel<FolderModel>().uri
+                                intent.putExtra("int","0")
                                 startActivity(intent)
                             }
                         }
@@ -811,7 +822,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
                 @SuppressLint("UseCompatLoadingForDrawables")
                 fun refreshList(
-                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding
+                    bindingViews: ArrayList<View>, context: Context, binding: ActivityMainBinding,activity: Activity
                 ) {
                     bindingViews[2].findViewById<SwipeRefreshLayout>(R.id.refresh_view)
                         .setOnRefreshListener {
@@ -822,10 +833,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                         )
                                     )
                                 ) {
-                                    //ToastUtils.show("软件遇到了意外的错误！\n或者是您的手机没有视频？")
+                                    //ToastUtils.showShort("软件遇到了意外的错误！\n或者是您的手机没有视频？")
                                 }
                                 launch(Dispatchers.Main) {
-                                    folderList(bindingViews, context, binding)
+                                    folderList(bindingViews, context, binding,activity)
                                     binding.mainToolbar.title = "媒体所属"
                                     MainObjects.isChoose = false
                                     MainObjects.chooseList.clear()
@@ -851,6 +862,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     }
 
                     override fun onPageSelected(position: Int) {
+                        val anim =  AlphaAnimation(0f,1f)
+                        anim.duration = 200
+                        binding.mainViewpager.startAnimation(anim)
                         when (position) {
                             0 -> {
                                 binding.mainNavigationView.selectedItemId = R.id.page1
@@ -914,7 +928,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     permissions: MutableList<String>, allGranted: Boolean
                                 ) {
                                     if (!allGranted) {
-                                        ToastUtils.show("获取部分权限成功，但部分权限未正常授予")
+                                        ToastUtils.showShort("获取部分权限成功，但部分权限未正常授予")
                                         activity.finish()
                                         return
                                     }
@@ -938,10 +952,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                                     permissions: MutableList<String>, doNotAskAgain: Boolean
                                 ) {
                                     if (doNotAskAgain) {
-                                        ToastUtils.show("请授权读取视频文件权限")
+                                        ToastUtils.showShort("请授权读取视频文件权限")
                                         XXPermissions.startPermissionActivity(context, permissions)
                                     } else {
-                                        ToastUtils.show("获取读取视频文件权限失败")
+                                        ToastUtils.showShort("获取读取视频文件权限失败")
                                         activity.finish()
                                     }
                                 }

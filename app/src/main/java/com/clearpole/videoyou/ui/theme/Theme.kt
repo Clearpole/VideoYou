@@ -6,11 +6,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import com.blankj.utilcode.util.ToastUtils
 import com.clearpole.videoyou.R
+import com.clearpole.videoyou.objects.AppObjects
 import com.gyf.immersionbar.BarHide
 import com.gyf.immersionbar.ImmersionBar
 import com.tencent.mmkv.MMKV
@@ -19,13 +18,12 @@ import com.tencent.mmkv.MMKV
 fun VideoYouOptTheme(
     content: @Composable () -> Unit
 ) {
-    val kv = MMKV.mmkvWithID("theme")
-    val colorScheme = when (kv.decodeInt("theme")) {
+    val colorScheme = when (AppObjects.theme) {
         0 -> {
             dynamicLightColorScheme(LocalContext.current)
         }
 
-        R.style.hzt -> {
+        1 -> {
             lightColorScheme(
                 primary = hzt_theme_light_primary,
                 onPrimary = hzt_theme_light_onPrimary,
@@ -59,7 +57,7 @@ fun VideoYouOptTheme(
             )
         }
 
-        R.style.cxw -> {
+        2 -> {
             lightColorScheme(
                 primary = cxw_theme_light_primary,
                 onPrimary = cxw_theme_light_onPrimary,
@@ -93,7 +91,7 @@ fun VideoYouOptTheme(
             )
         }
 
-        R.style.szy -> {
+        3 -> {
             lightColorScheme(
                 primary = szy_theme_light_primary,
                 onPrimary = szy_theme_light_onPrimary,
@@ -127,7 +125,7 @@ fun VideoYouOptTheme(
             )
         }
 
-        R.style.xfy -> {
+        4 -> {
             lightColorScheme(
                 primary = xfy_theme_light_primary,
                 onPrimary = xfy_theme_light_onPrimary,
