@@ -27,3 +27,8 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLParameters
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
+-dontwarn com.hjq.permissions.**
+#keep 类名和类成员都不会被移除和混淆
+-keep class * implements androidx.viewbinding.ViewBinding {
+    *;
+}
