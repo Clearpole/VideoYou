@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
+    app:cardBackgroundColor="#00000000"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp">
+
+    <RelativeLayout
+        android:id="@+id/item_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:foreground="?selectableItemBackground"
+        android:padding="10dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card"
+            style="@style/Widget.Material3.CardView.Elevated"
+            android:layout_width="110dp"
+            android:layout_height="70dp"
+            android:layout_centerVertical="true"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/item_cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:maxHeight="60dp"
+                    android:scaleType="centerCrop" />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="#4d000000"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_marginBottom="3dp"
+                        android:gravity="center"
+                        android:id="@+id/time"
+                        android:textColor="#ffffffff"
+                        android:textSize="10sp" />
+                </com.google.android.material.card.MaterialCardView>
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        </LinearLayout>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/item_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_toEndOf="@id/card"
+            android:breakStrategy="high_quality"
+            android:textSize="18sp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/item_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/item_name"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="5dp"
+            android:layout_toEndOf="@id/card"
+            android:text="2023-3-11 · 23.2MB"
+            android:textSize="13sp" />
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VideoYouX</string>
+    <string name="title_activity_player">VYX 播放器</string>
+    <string name="title_activity_refresh_data">RefreshDataActivity</string>
+</resources>
