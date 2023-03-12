@@ -59,10 +59,11 @@ class FolderList {
         ): MutableList<Any> {
             return mutableListOf<Any>().apply {
                 for (index in 0 until kv!!.length()) {
+                    val json = JSONObject(kv.getString(index))
                     add(
                         FolderModel(
-                            title = JSONObject(kv.getString(index)).getString("name"),
-                            navController = navController
+                            json = json,
+                            navController = navController,
                         )
                     )
                 }

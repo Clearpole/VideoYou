@@ -1,6 +1,7 @@
 package com.clearpole.videoyoux.ui.subgroup.folder
 
 import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,14 +16,14 @@ import androidx.compose.ui.unit.dp
 class Folder {
     companion object {
         @Composable
-        fun Folder(title: String, activity: Activity) {
+        fun Folder(title: String, activity: Activity,info : String,path:String) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
                 Spacer(modifier = Modifier.height(60.dp))
-                Header.Header(title)
-                FolderSubList.Start(activity = activity, title)
+                Header.Header(title,info)
+                FolderSubList.Start(activity = activity,path)
             }
         }
     }

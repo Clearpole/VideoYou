@@ -23,9 +23,9 @@ class VideoModel(
     val title: String,
     private val uri: Uri,
     private val path: String,
-    private val duration: String,
-    private val size: String,
-    private val dateAdded: String
+    private val duration: Long,
+    private val size: Long,
+    private val dateAdded: Long
 ) : ItemBind {
     override fun onBind(holder: BindingAdapter.BindingViewHolder) {
         holder.getBinding<VideoItemBinding>().apply {
@@ -36,17 +36,18 @@ class VideoModel(
                 )
             }
             itemInfo.text = buildString {
-                append(TimeUtils.millis2String(dateAdded.toLong()*1000L))
+                append(TimeUtils.millis2String(dateAdded))
                 append(" · ")
-                append(ByteToString.byteToString(size.toLong()))
+                append(ByteToString.byteToString(size))
             }
-            time.text = TimeParse.timeParse(duration = duration.toLong())
+            time.text = TimeParse.timeParse(duration = duration)
             CoroutineScope(Dispatchers.IO).launch {
+                val load =  Glide.with(holder.context).load(uri)
+                    .transition(DrawableTransitionOptions.withCrossFade()).diskCacheStrategy(
+                        DiskCacheStrategy.RESOURCE
+                    )
                 withContext(Dispatchers.Main) {
-                    Glide.with(holder.context).load(uri)
-                        .transition(DrawableTransitionOptions.withCrossFade()).diskCacheStrategy(
-                            DiskCacheStrategy.RESOURCE
-                        ).into(itemCover)
+                   load.into(itemCover)
                 }
                 cancel()
             }

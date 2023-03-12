@@ -8,7 +8,6 @@ import android.os.Environment
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -46,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     if (MainActivity.checkPermission(this).not()) {
                         openActivity<PermissionActivity>()
-                    } else if(MMKV.mmkvWithID("Settings").decodeBool("init").not()){
+                    } else if (MMKV.mmkvWithID("Settings").decodeBool("init").not()) {
                         openActivity<RefreshDataActivity>()
                     } else {
                         RefreshMediaStore.updateMedia(
@@ -68,20 +67,29 @@ class MainActivity : ComponentActivity() {
             }, exitTransition = {
                 slideOutHorizontally { width -> -width } + fadeOut()
             }) {
-                Home.Home(activity = this@MainActivity, navController = navController)
+                Home.Home(
+                    activity = this@MainActivity, navController = navController, this@MainActivity
+                )
             }
             composable(
-                "${NavHost.NAV_FOLDER}/{${NavHost.FOLDER_TITLE}}",
+                "${NavHost.NAV_FOLDER}/{title}/{info}/{path}",
                 enterTransition = {
                     slideInHorizontally { width -> width } + fadeIn()
-                }, exitTransition = {
-                    slideOutHorizontally{ width -> -width } + fadeOut()
                 },
-                arguments = listOf(navArgument(NavHost.FOLDER_TITLE) { type = NavType.StringType })
+                exitTransition = {
+                    slideOutHorizontally { width -> -width } + fadeOut()
+                },
+                arguments = listOf(navArgument("title") { type = NavType.StringType },
+                    navArgument("info") { type = NavType.StringType },
+                    navArgument("path") { type = NavType.StringType })
             ) {
                 val argument = requireNotNull(it.arguments)
-                val title = argument.getString(NavHost.FOLDER_TITLE)
-                Folder.Folder(title!!, this@MainActivity)
+                Folder.Folder(
+                    title = argument.getString("title")!!,
+                    info = argument.getString("info")!!,
+                    path = argument.getString("path")!!,
+                    activity = this@MainActivity
+                )
             }
         }
     }

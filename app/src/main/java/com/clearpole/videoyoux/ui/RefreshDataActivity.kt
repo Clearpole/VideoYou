@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,6 +51,9 @@ class RefreshDataActivity : ComponentActivity() {
                 val success = remember {
                     mutableStateOf(false)
                 }
+                val ing = remember {
+                    mutableStateOf(false)
+                }
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
@@ -60,14 +65,14 @@ class RefreshDataActivity : ComponentActivity() {
                         Box(
                             Modifier
                                 .weight(1f)
-                                .fillMaxWidth(),
+                                .fillMaxSize(),
                             contentAlignment = Alignment.TopCenter
                         ) {
                             AnimatedContent(targetState = success.value, transitionSpec = {
                                 slideInHorizontally { width -> width } + fadeIn() with slideOutHorizontally { width -> -width } + fadeOut()
                             }, label = "") {
                                 Column(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxSize(),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
@@ -80,6 +85,12 @@ class RefreshDataActivity : ComponentActivity() {
                                         text = if (it.not()) "请点击按钮以刷新数据库" else "重启VYX后数据才会重载哦",
                                         fontSize = 16.sp
                                     )
+                                    Spacer(modifier = Modifier.height(120.dp))
+                                    AnimatedContent(targetState = ing.value, label = "") {
+                                        if (ing.value) {
+                                            CircularProgressIndicator(modifier = Modifier.width(100.dp))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -91,13 +102,15 @@ class RefreshDataActivity : ComponentActivity() {
                         ) {
                             AnimatedContent(targetState = success.value, label = "") {
                                 Button(onClick = {
+                                    ing.value = true
                                     if (it.not()) {
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            DatabaseStorage.writeDataToData(ReadMediaStore.start(contentResolver))
+                                            //DatabaseStorage.writeDataToData(ReadMediaStore.start(contentResolver))
                                             DatabaseStorage.writeFolderToData(ReadMediaStore.getFolder(contentResolver))
                                             withContext(Dispatchers.Main){
                                                 MMKV.mmkvWithID("Settings").encode("init",true)
                                                 success.value = true
+                                                ing.value = false
                                             }
                                         }
                                     } else {

@@ -16,20 +16,5 @@ class MainActivity {
         fun checkPermission(context: Context): Boolean {
             return XXPermissions.isGranted(context, PERMISSION)
         }
-        suspend fun getMediaStoreList(activity: Activity): MutableMap<Int, JSONObject> {
-            val dataBase = DatabaseStorage.readDataByData()
-            val dataMutableList = mutableMapOf<Int, JSONObject>()
-            try {
-                for (index in 0 until dataBase!!.length()) {
-                    val objects = JSONObject(dataBase.getString(index))
-                    dataMutableList[index] = objects
-                }
-            } catch (error: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.showError(activity, error.toString(), "发生错误")
-                }
-            }
-            return dataMutableList
-        }
     }
 }

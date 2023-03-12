@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
-import android.text.TextUtils.substring
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 
 class ReadMediaStore {
@@ -77,12 +79,22 @@ class ReadMediaStore {
                                 json.put(
                                     "name", folder
                                 )
-                                val data = getString(getColumnIndexOrThrow(MediaStore.Video.Media.DATA))
+                                val data =
+                                    getString(getColumnIndexOrThrow(MediaStore.Video.Media.DATA))
+                                val path = data.substring(0, data.lastIndexOf("/"))
                                 json.put(
-                                    "path",
-                                    data.substring(0,data.lastIndexOf("/"))
+                                    "path", path
                                 )
-                                itemJson.put(json)
+                                val folderFile = File(path)
+                                folderFile.listFiles()!!.apply {
+                                    val count = size
+                                    sortedBy { it.lastModified() }[lastIndex].apply {
+                                        json.put("last", this.path)
+                                        json.put("time", getFileLastModifiedTime(folderFile))
+                                        json.put("sonFileCount",count)
+                                    }
+                                    itemJson.put(json)
+                                }
                             }
                         }
                     }
@@ -91,6 +103,17 @@ class ReadMediaStore {
 
             }
             return itemJson
+        }
+
+        private val formatType = "yyyy-MM-dd HH:mm"
+
+        @SuppressLint("SimpleDateFormat")
+        fun getFileLastModifiedTime(file: File): String? {
+            val cal: Calendar = Calendar.getInstance()
+            val time = file.lastModified()
+            val formatter = SimpleDateFormat(formatType)
+            cal.timeInMillis = time
+            return formatter.format(cal.time)
         }
     }
 }
