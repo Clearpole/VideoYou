@@ -84,7 +84,7 @@ static def object(type) {
     } else if (type == "version") {
         return "0.9.9"
     } else if (type == "subVersion") {
-        return "Canary03"
+        return "Canary05"
     } else if (type == "buildTime") {
         return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
     } else if(type == "code") {
