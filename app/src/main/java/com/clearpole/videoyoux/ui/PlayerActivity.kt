@@ -2,6 +2,7 @@ package com.clearpole.videoyoux.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +13,8 @@ import com.clearpole.videoyoux.ui.theme.VideoYouTheme
 import com.drake.serialize.intent.bundle
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder
+import com.shuyu.gsyvideoplayer.cache.CacheFactory
+import com.shuyu.gsyvideoplayer.cache.ProxyCacheManager
 import com.shuyu.gsyvideoplayer.model.VideoOptionModel
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
 import com.shuyu.gsyvideoplayer.player.PlayerFactory
@@ -27,29 +30,37 @@ class PlayerActivity : ComponentActivity() {
         setContent {
             VideoYouTheme(hideBar = true) {
                 Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+                    modifier = Modifier
+                        .fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     PlayerFactory.setPlayManager(IjkPlayerManager::class.java)
+                    IjkPlayerManager.setLogLevel(IjkMediaPlayer.IJK_LOG_SILENT)
+                    CacheFactory.setCacheManager(ProxyCacheManager::class.java)
                     AndroidView(factory = {
                         StandardGSYVideoPlayer(it).apply {
-                            val gsyVideoOption = GSYVideoOptionBuilder()
-                            val videoOptionModel = VideoOptionModel(
-                                IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 50
-                            )
-                            val list: MutableList<VideoOptionModel> = ArrayList()
-                            list.add(videoOptionModel)
-                            list.add(
+                            val list = arrayListOf(
+                                VideoOptionModel(
+                                    IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 10
+                                ),
+                                VideoOptionModel(
+                                    IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1
+                                ),
                                 VideoOptionModel(
                                     IjkMediaPlayer.OPT_CATEGORY_PLAYER,
-                                    "mediacodec",
+                                    "enable-accurate-seek",
                                     1
                                 )
                             )
                             GSYVideoManager.instance().optionModelList = list
-                            gsyVideoOption.setUrl(url).build(this)
+                            GSYVideoOptionBuilder().setCacheWithPlay(false).setUrl(url)
+                                .setStartAfterPrepared(true).setAutoFullWithSize(true).build(this)
                         }
                     })
                 }
+            }
+            BackHandler {
+                GSYVideoManager.releaseAllVideos()
+                finish()
             }
         }
     }

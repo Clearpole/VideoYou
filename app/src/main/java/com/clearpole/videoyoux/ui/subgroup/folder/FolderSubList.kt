@@ -34,7 +34,7 @@ class FolderSubList {
                     )
                     CoroutineScope(Dispatchers.IO).launch {
                         val model = getList(activity, path.replace("[.].{.}", "/"))
-                        delay(450)
+                        delay(100)
                         withContext(Dispatchers.Main) {
                             linear().setup {
                                 addType<VideoModel> { R.layout.video_item }

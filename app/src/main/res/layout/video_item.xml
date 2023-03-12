@@ -87,9 +87,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/item_name"
             android:layout_marginStart="15dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="10dp"
             android:layout_toEndOf="@id/card"
-            android:text="2023-3-11 · 23.2MB"
             android:textSize="13sp" />
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

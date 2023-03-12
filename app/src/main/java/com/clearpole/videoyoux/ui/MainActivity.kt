@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
 package com.clearpole.videoyoux.ui
 
 import android.annotation.SuppressLint
@@ -25,6 +23,7 @@ import com.clearpole.videoyoux.logic.utils.RefreshMediaStore
 import com.clearpole.videoyoux.ui.subgroup.folder.Folder
 import com.clearpole.videoyoux.ui.subgroup.home.Home
 import com.clearpole.videoyoux.ui.theme.VideoYouTheme
+import com.developer.crashx.config.CrashConfig
 import com.drake.serialize.intent.openActivity
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -43,6 +42,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = 95.n2..10.n2
                 ) {
+                    CrashConfig.Builder.create().errorActivity(CrashActivity::class.java)
                     if (MainActivity.checkPermission(this).not()) {
                         openActivity<PermissionActivity>()
                     } else if (MMKV.mmkvWithID("Settings").decodeBool("init").not()) {
@@ -62,11 +62,7 @@ class MainActivity : ComponentActivity() {
     fun NavHost() {
         val navController = rememberAnimatedNavController()
         AnimatedNavHost(navController = navController, startDestination = NavHost.NAV_HOME) {
-            composable(NavHost.NAV_HOME, enterTransition = {
-                slideInHorizontally { width -> width } + fadeIn()
-            }, exitTransition = {
-                slideOutHorizontally { width -> -width } + fadeOut()
-            }) {
+            composable(NavHost.NAV_HOME) {
                 Home.Home(
                     activity = this@MainActivity, navController = navController, this@MainActivity
                 )
