@@ -102,7 +102,7 @@ class FolderList {
                                 }
                             }, modifier = Modifier.align(Alignment.TopCenter)
                         ) {
-                            Text(text = if (listLoaded.value.not()) "坐和放宽.." else "查看全部文件夹")
+                            Text(text = if (listLoaded.value.not()) "请坐和放宽.." else "查看全部文件夹")
                         }
                     }
                 }
