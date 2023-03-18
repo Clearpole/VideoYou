@@ -26,7 +26,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.blankj.utilcode.util.TimeUtils
 import com.clearpole.videoyoux.logic.utils.ColorEggDate
-import com.clearpole.videoyoux.ui.RefreshDataActivity
 import com.drake.serialize.intent.openActivity
 
 class Home {
@@ -120,26 +123,12 @@ class Home {
                             .padding(end = 15.dp)
                             .align(Alignment.TopEnd)
                     ) {
-                        Column(
-                            Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .width(40.dp)
-                                .height(40.dp)
-                        ) {
-                            Column(
-                                Modifier
-                                    .fillMaxSize()
-                                    .clickable {
-                                        context.openActivity<RefreshDataActivity>()
-                                    }, verticalArrangement = Arrangement.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "刷新",
-                                    modifier = Modifier.align(
-                                        Alignment.CenterHorizontally
-                                    )
-                                )
-                            }
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }

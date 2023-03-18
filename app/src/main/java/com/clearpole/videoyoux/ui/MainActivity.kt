@@ -11,11 +11,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.clearpole.videoyoux.logic.NavHost
 import com.clearpole.videoyoux.logic.activity.MainActivity
@@ -40,13 +41,13 @@ class MainActivity : ComponentActivity() {
             System.loadLibrary("monet")
             VideoYouTheme(hideBar = false) {
                 Surface(
-                    modifier = Modifier.fillMaxSize(), color = 95.n2..10.n2
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     CrashConfig.Builder.create().errorActivity(CrashActivity::class.java)
                     if (MainActivity.checkPermission(this).not()) {
-                        openActivity<PermissionActivity>()
+                        openActivity<GuideActivity>()
                     } else if (MMKV.mmkvWithID("Settings").decodeBool("init").not()) {
-                        openActivity<RefreshDataActivity>()
+                        openActivity<GuideActivity>()
                     } else {
                         RefreshMediaStore.updateMedia(
                             this, Environment.getExternalStorageDirectory().toString()
@@ -61,6 +62,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun NavHost() {
         val navController = rememberAnimatedNavController()
+        navController.currentBackStackEntryAsState()
         AnimatedNavHost(navController = navController, startDestination = NavHost.NAV_HOME) {
             composable(NavHost.NAV_HOME) {
                 Home.Home(
@@ -84,8 +86,18 @@ class MainActivity : ComponentActivity() {
                     title = argument.getString("title")!!,
                     info = argument.getString("info")!!,
                     path = argument.getString("path")!!,
-                    activity = this@MainActivity
+                    activity = this@MainActivity,
+                    navHostController = navController
                 )
+            }
+            composable(
+                NavHost.NAV_FOLDER_ALL, enterTransition = {
+                slideInHorizontally { width -> width } + fadeIn()
+            },
+                exitTransition = {
+                    slideOutHorizontally { width -> -width } + fadeOut()
+                }) {
+                Folder.FolderAll(navController)
             }
         }
     }

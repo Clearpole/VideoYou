@@ -1,6 +1,8 @@
 package com.clearpole.videoyoux.logic.model
 
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.blankj.utilcode.util.EncodeUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -14,6 +16,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.net.URLEncoder
 
 class FolderModel(val json: JSONObject, val navController: NavController) : ItemBind {
     override fun onBind(holder: BindingAdapter.BindingViewHolder) {
@@ -23,11 +26,14 @@ class FolderModel(val json: JSONObject, val navController: NavController) : Item
             bind.root.setOnClickListener {
                 navController.navigate("${NavHost.NAV_FOLDER}/${getString("name")}/${
                     buildString {
-                        append(getString("time") + " created")
-                        append(" · ")
                         append(getString("sonFileCount") + " videos")
                     }
-                }/${getString("path").replace("/","[.].{.}")}")
+                }/${URLEncoder.encode(getString("name"))}"){
+                    popUpTo(navController.graph.findStartDestination().id){
+                        saveState = true
+                    }
+                    restoreState = true
+                }
             }
             bind.subCount.text = buildString {
                 append(getString("sonFileCount") + " videos")

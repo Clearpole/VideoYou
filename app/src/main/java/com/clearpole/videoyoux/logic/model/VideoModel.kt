@@ -36,7 +36,7 @@ class VideoModel(
                 )
             }
             itemInfo.text = buildString {
-                append(TimeUtils.millis2String(dateAdded))
+                append(TimeUtils.millis2String(dateAdded*1000))
                 append(" · ")
                 append(ByteToString.byteToString(size))
             }

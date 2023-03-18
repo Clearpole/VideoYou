@@ -3,19 +3,19 @@ package com.clearpole.videoyoux.logic.activity
 import android.app.Activity
 import android.content.Context
 import androidx.compose.runtime.MutableState
+import androidx.navigation.NavHostController
+import com.clearpole.videoyoux.logic.NavHost
+import com.clearpole.videoyoux.ui.GuideActivity
 import com.clearpole.videoyoux.ui.theme.utils.Toast
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.XXPermissions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
-class PermissionActivity {
+class GetPermission {
     companion object {
         fun getPermission(
             context: Context,
             activity: Activity,
-            hasPermission: MutableState<Boolean>
+            step:MutableState<String>,
+            navController: NavHostController
         ) {
             XXPermissions.with(context).permission(MainActivity.PERMISSION)
                 .request(object : OnPermissionCallback {
@@ -28,9 +28,8 @@ class PermissionActivity {
                             )
                             return
                         }
-                        CoroutineScope(Dispatchers.IO).launch {
-                            hasPermission.value = true
-                        }
+                        navController.navigate(NavHost.NAV_GUIDE_WRITE_DATA)
+                        step.value = GuideActivity.STEP_WRITE_DATA
                     }
 
                     override fun onDenied(

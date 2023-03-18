@@ -1,23 +1,34 @@
 package com.clearpole.videoyoux.logic.utils
 
-import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
+import com.clearpole.videoyoux.logic.Values
+import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Calendar
 
 
 class ReadMediaStore {
     companion object {
-        @SuppressLint("Recycle")
-        suspend fun start(contentResolver: ContentResolver): JSONArray {
-            val array = JSONArray()
+        val kv_video = MMKV.mmkvWithID("vyx-videos", MMKV.SINGLE_PROCESS_MODE, Values.KEY)!!
+        suspend fun readFolder(): ArrayList<String> = withContext(Dispatchers.IO) {
+            val array = arrayListOf<String>()
+            kv_video.allKeys()!!.toMutableList().forEach {
+                array.add(it)
+            }
+            array
+        }
+
+        suspend fun readVideos(folder: String): JSONArray = JSONArray(
+            kv_video.decodeString(folder)
+        )
+
+        suspend fun writeData(contentResolver: ContentResolver) {
+            kv_video.clearAll()
+            var itemArray = JSONArray()
             withContext(Dispatchers.IO) {
                 contentResolver.query(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI, null, null, null, null
@@ -25,6 +36,9 @@ class ReadMediaStore {
                     moveToPosition(-1)
                     while (moveToNext()) {
                         val itemJson = JSONObject()
+                        val folder =
+                            getString(getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME))
+                                ?: "根目录"
                         itemJson.put(
                             "title", getString(getColumnIndexOrThrow(MediaStore.Video.Media.TITLE))
                         )
@@ -52,68 +66,25 @@ class ReadMediaStore {
                             "dateAdded",
                             getString(getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED))
                         )
-                        array.put(itemJson)
-                    }
-                    close()
-                }
-            }
-            return array
-        }
-
-        suspend fun getFolder(contentResolver: ContentResolver): JSONArray {
-            val array = ArrayList<String>()
-            val itemJson = JSONArray()
-            withContext(Dispatchers.IO) {
-                contentResolver.query(
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI, null, null, null, null
-                )!!.apply {
-                    moveToPosition(-1)
-                    while (moveToNext()) {
-                        val folder =
-                            getString(getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME))
-                                ?: "根目录"
-                        if (!array.contains(folder)) {
-                            if (folder.isNotEmpty()) {
-                                array.add(folder)
-                                val json = JSONObject()
-                                json.put(
-                                    "name", folder
-                                )
-                                val data =
-                                    getString(getColumnIndexOrThrow(MediaStore.Video.Media.DATA))
-                                val path = data.substring(0, data.lastIndexOf("/"))
-                                json.put(
-                                    "path", path
-                                )
-                                val folderFile = File(path)
-                                folderFile.listFiles()!!.apply {
-                                    val count = size
-                                    sortedBy { it.lastModified() }[lastIndex].apply {
-                                        json.put("last", this.path)
-                                        json.put("time", getFileLastModifiedTime(folderFile))
-                                        json.put("sonFileCount",count)
-                                    }
-                                    itemJson.put(json)
+                        itemArray.put(itemJson)
+                        if (kv_video.containsKey(folder)) {
+                            val array = JSONArray(kv_video.decodeString(folder))
+                            kv_video.remove(folder)
+                            for (index in 0..array.length()) {
+                                try {
+                                    itemArray.put(array[index])
+                                } catch (_: Exception) {
                                 }
                             }
+                            kv_video.putString(folder, itemArray.toString())
+                        } else {
+                            kv_video.encode(folder, itemArray.toString())
                         }
+                        itemArray = JSONArray()
                     }
                     close()
                 }
-
             }
-            return itemJson
-        }
-
-        private val formatType = "yyyy-MM-dd HH:mm"
-
-        @SuppressLint("SimpleDateFormat")
-        fun getFileLastModifiedTime(file: File): String? {
-            val cal: Calendar = Calendar.getInstance()
-            val time = file.lastModified()
-            val formatter = SimpleDateFormat(formatType)
-            cal.timeInMillis = time
-            return formatter.format(cal.time)
         }
     }
 }
