@@ -1,5 +1,7 @@
 # VideoYou-Code
 
+# 项目已迁移至 https://github.com/Clearpole/VideoYouX
+
 [官方频道 点击加入QQ频道【VideoYou】](https://pd.qq.com/s/61vf6d5qi)
 
 注：本仓库是VideoYou的代码开源库，而<b>不是</b>项目发布仓库。
